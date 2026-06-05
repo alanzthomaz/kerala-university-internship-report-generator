@@ -1,0 +1,1380 @@
+diff --git a/internship_report_generator.html b/internship_report_generator.html
+index 9c7365f..7e09f83 100644
+--- a/internship_report_generator.html
++++ b/internship_report_generator.html
+@@ -12,9 +12,6 @@
+   
+   <!-- docx.js library (v7.1.0 UMD build via CDN) -->
+   <script src="https://unpkg.com/docx@7.1.0/build/index.js"></script>
+-  
+-  <!-- pdf.js library (v2.16.105 UMD build via CDN) -->
+-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+ 
+   <style>
+     /* Premium Hybrid Theme Design System */
+@@ -24,24 +21,23 @@
+       --bg-card: #ffffff;
+       --border-color: #e2e8f0;
+       --border-focus: #6366f1;
++      --primary-color: #4f46e5;
++      --accent: #6366f1;
++      --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+       --text-main: #0f172a;
+       --text-secondary: #475569;
+       --text-muted: #64748b;
+-      --accent: #4f46e5;
+-      --accent-hover: #4338ca;
+-      --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+       --success: #10b981;
+-      --error: #ef4444;
+       --warning: #f59e0b;
+-      --info: #0ea5e9;
+-      --radius-sm: 8px;
+-      --radius-md: 12px;
+-      --radius-lg: 16px;
+-      --transition: all 0.2s ease-in-out;
+-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1);
+-      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.05);
+-      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.05);
+-      --font-ui: 'Outfit', 'Inter', sans-serif;
++      --error: #ef4444;
++      --info: #3b82f6;
++      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
++      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
++      --radius-sm: 6px;
++      --radius-md: 10px;
++      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
++      --font-ui: 'Outfit', sans-serif;
++      --font-body: 'Inter', sans-serif;
+     }
+ 
+     * {
+@@ -51,42 +47,44 @@
+     }
+ 
+     body {
+-      background-color: var(--bg-main);
++      font-family: var(--font-body);
++      background: var(--bg-main);
+       color: var(--text-main);
+-      font-family: var(--font-ui);
+       min-height: 100vh;
+       display: flex;
+       flex-direction: column;
++      overflow-x: hidden;
+     }
+ 
+     header {
+       background: var(--bg-sidebar);
+       color: #fff;
++      padding: 1rem 2rem;
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+-      padding: 1rem 2rem;
+-      border-bottom: 1px solid rgba(255,255,255,0.1);
+-      z-index: 100;
++      border-bottom: 1px solid rgba(255,255,255,0.05);
++      height: 4.5rem;
+     }
+ 
+     .logo-container {
+       display: flex;
+       align-items: center;
+-      gap: 12px;
+     }
+ 
+-    /* Professional Emblem Logo styles */
+     .logo-emblem {
++      width: 42px;
++      height: 42px;
++      background: rgba(255, 255, 255, 0.03);
++      border-radius: var(--radius-sm);
+       display: flex;
+       align-items: center;
+       justify-content: center;
+-      transition: all 0.3s ease;
+-      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
++      border: 1px solid rgba(255, 255, 255, 0.1);
+     }
+-    .logo-emblem:hover {
+-      transform: scale(1.05) rotate(5deg);
+-      filter: drop-shadow(0 4px 8px rgba(212, 175, 55, 0.4));
++
++    svg.logo {
++      display: block;
+     }
+ 
+     .logo-text h1 {
+@@ -104,6 +102,7 @@
+ 
+     .header-actions {
+       display: flex;
++      align-items: center;
+       gap: 12px;
+     }
+ 
+@@ -132,6 +131,28 @@
+       flex: 1;
+       height: calc(100vh - 4.5rem);
+       overflow: hidden;
++      transition: grid-template-columns 0.3s cubic-bezier(0.4, 0, 0.2, 1);
++    }
++
++    @media (min-width: 1001px) {
++      .workspace.has-side-preview {
++        grid-template-columns: 1fr 380px 380px;
++      }
++    }
++
++    @media (max-width: 1200px) and (min-width: 1001px) {
++      .workspace.has-side-preview {
++        grid-template-columns: 1fr 340px 320px;
++      }
++    }
++
++    @media (max-width: 1000px) {
++      .side-preview-pane {
++        display: none !important;
++      }
++      .workspace.has-side-preview {
++        grid-template-columns: 1fr;
++      }
+     }
+ 
+     /* Main Editor Area */
+@@ -1080,6 +1101,79 @@
+     .para-word-count.info {
+       color: var(--info);
+     }
++
++    /* Toggle switch slider styling */
++    .toggle-switch-container {
++      display: flex;
++      align-items: center;
++      gap: 8px;
++      margin-right: 15px;
++      cursor: pointer;
++      user-select: none;
++      font-size: 0.8rem;
++      font-weight: 600;
++      color: #e2e8f0;
++    }
++
++    .switch-slider {
++      position: relative;
++      display: inline-block;
++      width: 38px;
++      height: 20px;
++      background-color: rgba(255,255,255,0.2);
++      border-radius: 20px;
++      transition: background-color 0.2s ease;
++    }
++
++    .switch-slider::after {
++      content: '';
++      position: absolute;
++      width: 16px;
++      height: 16px;
++      border-radius: 50%;
++      background-color: white;
++      top: 2px;
++      left: 2px;
++      transition: transform 0.2s ease;
++      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
++    }
++
++    input[type="checkbox"]#toggleSidePreview {
++      display: none;
++    }
++
++    input[type="checkbox"]#toggleSidePreview:checked + .switch-slider {
++      background-color: var(--accent);
++    }
++
++    input[type="checkbox"]#toggleSidePreview:checked + .switch-slider::after {
++      transform: translateX(18px);
++    }
++
++    /* Side Preview Pane Styles */
++    .side-preview-pane {
++      background: #cbd5e1;
++      border-left: 1px solid #94a3b8;
++      border-right: 1px solid #94a3b8;
++      display: flex;
++      flex-direction: column;
++      padding: 1.2rem;
++      overflow-y: auto;
++      height: 100%;
++      gap: 1rem;
++    }
++
++    .side-preview-pane .sidebar-title {
++      border-bottom: 1px solid #94a3b8;
++      color: #0f172a;
++      display: flex;
++      justify-content: space-between;
++      align-items: center;
++      width: 100%;
++      padding-bottom: 8px;
++      font-size: 1rem;
++      font-weight: 700;
++    }
+   </style>
+ </head>
+ <body>
+@@ -1093,10 +1187,16 @@
+     </div>
+     <div class="logo-text" style="margin-left: 8px;">
+       <h1>Kerala University FYUGP Internship Report Generator</h1>
+-      <span>Offline RAG Template Engine</span>
++      <span>Offline Internship Report Generator</span>
+     </div>
+   </div>
+   <div class="header-actions">
++    <!-- Live Side-by-Side Toggle -->
++    <label class="toggle-switch-container">
++      <input type="checkbox" id="toggleSidePreview" onchange="toggleSideBySidePreview()" />
++      <span class="switch-slider"></span>
++      <span>Live Preview</span>
++    </label>
+     <button class="btn-secondary" onclick="resetForm()">Clear Caches</button>
+   </div>
+ </header>
+@@ -1339,6 +1439,26 @@
+ 
+   </div>
+ 
++  <!-- Side-by-Side Live Preview Pane -->
++  <div class="side-preview-pane" id="sidePreviewPane" style="display: none;">
++    <div class="sidebar-title">
++      <span style="color:#0f172a;">Live Preview</span>
++      <select id="sidePreviewSectionSelect" onchange="renderPreviewContent('sidePreviewSectionSelect')" style="padding: 4px 8px; font-size: 0.75rem; border-radius: var(--radius-sm); border: 1px solid #cbd5e1; background:#fff; color:#0f172a; font-family:var(--font-ui); font-weight:600; width:180px;">
++        <option value="cover">Document Cover Page</option>
++        <option value="ch1">Chapter 1 – Introduction</option>
++        <option value="ch2">Chapter 2 – Organization Profile</option>
++        <option value="ch3">Chapter 3 – Internship Activities Narrative</option>
++        <option value="ch4">Chapter 4 – Project / Technical Learning</option>
++        <option value="ch5">Chapter 5 – Findings & Outcomes</option>
++        <option value="ch6">Chapter 6 – Conclusion</option>
++        <option value="references">References List</option>
++      </select>
++    </div>
++    <div id="sidePreviewWrapper" style="width: 100%; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
++      <!-- The .preview-canvas-wrapper element moves here in side-by-side mode -->
++    </div>
++  </div>
++
+   <!-- Right Sidebar Configuration Panel -->
+   <div class="sidebar-config">
+     <div class="tabs-config">
+@@ -1349,25 +1469,53 @@
+ 
+     <!-- Settings Tab Panel -->
+     <div class="panel-config active" id="tab-settings">
+-      <div class="sidebar-title">Domain Configuration</div>
++      <div class="sidebar-title">Domain & Data Management</div>
+       
+       <div class="field">
+         <label for="domainSelect">Select Internship Domain</label>
+         <select id="domainSelect" onchange="onDomainChanged()"></select>
+       </div>
+ 
+-      <div class="field">
+-        <label for="importDomainInput" style="cursor: pointer; display: inline-block; padding: 6px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; font-size: 0.8rem; font-weight: 500; text-align: center; width: 100%;">
+-          📁 Import Domain RAG JSON
++      <div style="display:flex; gap:8px; margin-top: -6px; margin-bottom: 10px;">
++        <label for="importDomainInput" style="flex:1; cursor: pointer; display: inline-block; padding: 6px 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; font-size: 0.75rem; font-weight: 500; text-align: center; margin: 0;">
++          📁 Import JSON
+         </label>
+         <input type="file" id="importDomainInput" style="display: none;" accept=".json" onchange="handleDomainImport(event)" />
++        
++        <button class="btn-secondary" style="flex:1; padding: 6px 8px; font-size: 0.75rem; border-radius: 4px;" onclick="exportDomainJSON()">
++          📤 Export JSON
++        </button>
+       </div>
+ 
+-      <div class="field">
+-        <label for="importPDFInput" style="cursor: pointer; display: inline-block; padding: 6px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; font-size: 0.8rem; font-weight: 500; text-align: center; width: 100%; color: #818cf8; border-color: #6366f1;">
+-          📄 Upload Reference PDF to Parse RAG
++      <div class="sidebar-title">Document Structure Toggles</div>
++      <div style="display:flex; flex-direction:column; gap:8px; margin-bottom: 10px;">
++        <label class="checkbox-field" style="color: #cbd5e1; display: flex; align-items: center; gap: 8px; font-size: 0.8rem;">
++          <input type="checkbox" id="includeBonafide" checked onchange="updateUI()" /> Include Bonafide Certificate
++        </label>
++        <label class="checkbox-field" style="color: #cbd5e1; display: flex; align-items: center; gap: 8px; font-size: 0.8rem;">
++          <input type="checkbox" id="includeCompanyCert" checked onchange="updateUI()" /> Include Company Certificate
++        </label>
++        <label class="checkbox-field" style="color: #cbd5e1; display: flex; align-items: center; gap: 8px; font-size: 0.8rem;">
++          <input type="checkbox" id="includeDeclaration" checked onchange="updateUI()" /> Include Student Declaration
++        </label>
++        <label class="checkbox-field" style="color: #cbd5e1; display: flex; align-items: center; gap: 8px; font-size: 0.8rem;">
++          <input type="checkbox" id="includeAcknowledgement" checked onchange="updateUI()" /> Include Acknowledgement Page
+         </label>
+-        <input type="file" id="importPDFInput" style="display: none;" accept=".pdf" onchange="handlePDFImport(event)" />
++        <label class="checkbox-field" style="color: #cbd5e1; display: flex; align-items: center; gap: 8px; font-size: 0.8rem;">
++          <input type="checkbox" id="includeTOC" checked onchange="updateUI()" /> Include Table of Contents (TOC)
++        </label>
++      </div>
++
++      <div class="sidebar-title">Internship Progress Stats</div>
++      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 12px; border-radius: var(--radius-sm); display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px;">
++        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #cbd5e1;">
++          <span>Total Days Configured:</span>
++          <span id="statsDays">26 Days</span>
++        </div>
++        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #cbd5e1;">
++          <span>Total Hours Logged:</span>
++          <span id="statsHours" style="font-weight: 700; color: var(--success);">104 Hours</span>
++        </div>
+       </div>
+ 
+       <div class="sidebar-title">Report Layout Parameters</div>
+@@ -1400,6 +1548,19 @@
+     <!-- Preview Tab Panel -->
+     <div class="panel-config" id="tab-preview">
+       <div class="sidebar-title">Document Preview</div>
++      <div class="field" style="margin-bottom: 0.5rem; width: 100%;">
++        <label for="previewSectionSelect">Select Preview Section</label>
++        <select id="previewSectionSelect" onchange="renderPreviewContent('previewSectionSelect')" style="width: 100%; padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color:#fff;">
++          <option value="cover">Document Cover Page</option>
++          <option value="ch1">Chapter 1 – Introduction</option>
++          <option value="ch2">Chapter 2 – Organization Profile</option>
++          <option value="ch3">Chapter 3 – Internship Activities Narrative</option>
++          <option value="ch4">Chapter 4 – Project / Technical Learning</option>
++          <option value="ch5">Chapter 5 – Findings & Outcomes</option>
++          <option value="ch6">Chapter 6 – Conclusion</option>
++          <option value="references">References List</option>
++        </select>
++      </div>
+       <div class="preview-canvas-wrapper">
+         <!-- Cover Preview -->
+         <div class="preview-card" id="previewCard">
+@@ -1750,7 +1911,13 @@
+     dailyActivities: [],
+     totalPages: 32,
+     customChapters: null,
+-    customChaptersDomain: ''
++    customChaptersDomain: '',
++    sidePreviewActive: false,
++    includeBonafide: true,
++    includeCompanyCert: true,
++    includeDeclaration: true,
++    includeAcknowledgement: true,
++    includeTOC: true
+   };
+ 
+   const chaptersMetadata = [
+@@ -1806,6 +1973,13 @@
+     syncAppStateToUI();
+     generateDailyLogInputs();
+     initCustomChapters();
++
++    // Restore side preview if active
++    if (appState.sidePreviewActive) {
++      const toggleEl = document.getElementById('toggleSidePreview');
++      if (toggleEl) toggleEl.checked = true;
++      toggleSideBySidePreview(true);
++    }
+   }
+ 
+   function syncAppStateToUI() {
+@@ -1862,7 +2036,8 @@
+       'startDate', 'endDate', 'internshipDomain', 'internshipTopic', 'mentorName', 
+       'facultyGuideName', 'facultyGuideDesignation', 'noProject', 'projectTitle', 
+       'problemStatement', 'projectObjective', 'projectDescription', 'technologiesUsed', 
+-      'programmingLanguages', 'toolsUsed', 'datasetUsed', 'methodology', 'numDays', 'totalPages'
++      'programmingLanguages', 'toolsUsed', 'datasetUsed', 'methodology', 'numDays', 'totalPages',
++      'includeBonafide', 'includeCompanyCert', 'includeDeclaration', 'includeAcknowledgement', 'includeTOC'
+     ];
+     
+     keysToRead.forEach(key => {
+@@ -1974,6 +2149,13 @@
+     appState.customChapters = null;
+     appState.customChaptersDomain = '';
+ 
++    // Reset document toggles
++    appState.includeBonafide = true;
++    appState.includeCompanyCert = true;
++    appState.includeDeclaration = true;
++    appState.includeAcknowledgement = true;
++    appState.includeTOC = true;
++
+     // Clear daily activity logs to empty records
+     appState.dailyActivities = [];
+     const numDays = parseInt(appState.numDays) || 26;
+@@ -2030,7 +2212,7 @@
+       syncAppStateToUI();
+       generateDailyLogInputs();
+       updateUI();
+-      addLog("Changed domain RAG set to: " + selected, "info");
++      addLog("Changed domain set to: " + selected, "info");
+     }
+   }
+ 
+@@ -2043,7 +2225,7 @@
+       try {
+         const imported = JSON.parse(e.target.result);
+         if (!imported.domainName || !imported.chapters || !imported.dailyActivities) {
+-          alert("Invalid Domain RAG Set file format. Must contain domainName, chapters, and dailyActivities.");
++          alert("Invalid Domain JSON file format. Must contain domainName, chapters, and dailyActivities.");
+           addLog("Error: Invalid domain JSON imported", "error");
+           return;
+         }
+@@ -2055,7 +2237,7 @@
+         onDomainChanged();
+         
+         showToast("✓ Imported domain " + imported.domainName);
+-        addLog("Imported domain RAG set: " + imported.domainName, "success");
++        addLog("Imported domain configuration: " + imported.domainName, "success");
+       } catch (err) {
+         alert("Failed to parse JSON file.");
+         addLog("Error parsing JSON: " + err.message, "error");
+@@ -2064,415 +2246,181 @@
+     reader.readAsText(file);
+   }
+ 
+-  async function handlePDFImport(event) {
+-    const file = event.target.files[0];
+-    if (!file) return;
+-
+-    addLog("Loading PDF file: " + file.name + "...", "info");
+-    showToast("📄 Loading and parsing PDF...");
+-
+-    try {
+-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+-
+-      const arrayBuffer = await file.arrayBuffer();
+-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+-      
+-      addLog(`PDF loaded successfully. Extracting text from ${pdf.numPages} pages...`, "info");
+-      
+-      let fullText = '';
+-      for (let i = 1; i <= pdf.numPages; i++) {
+-        const page = await pdf.getPage(i);
+-        const textContent = await page.getTextContent();
+-        const items = textContent.items;
+-        if (!items || items.length === 0) continue;
+-        
+-        // Group items that have similar Y coordinates (within a threshold of 4 points)
+-        const linesMap = [];
+-        items.forEach(item => {
+-          if (!item.str || item.str.trim() === '') return;
+-          const x = item.transform[4];
+-          const y = item.transform[5];
+-          
+-          let foundLine = linesMap.find(line => Math.abs(line.y - y) < 4);
+-          if (foundLine) {
+-            foundLine.items.push(item);
+-          } else {
+-            linesMap.push({ y: y, items: [item] });
+-          }
+-        });
+-        
+-        // Sort lines by Y descending (top to bottom of page)
+-        linesMap.sort((a, b) => b.y - a.y);
+-        
+-        // For each line, sort items by X ascending (left to right) and join with space
+-        const pageLines = linesMap.map(line => {
+-          line.items.sort((a, b) => a.transform[4] - b.transform[4]);
+-          return line.items.map(item => item.str).join(' ');
+-        });
+-        
+-        fullText += `\n` + pageLines.join('\n');
+-      }
+-      
+-      addLog("PDF text extracted with line breaks. Compiling domain RAG set using heuristics...", "info");
+-      
+-      const parsedRAG = parseReferencePDFText(fullText);
+-      if (!parsedRAG || !parsedRAG.domainName) {
+-        throw new Error("Could not parse domain structure from PDF.");
+-      }
+-
+-      domainDatabase[parsedRAG.domainName] = parsedRAG;
+-      initDomainSelector();
+-      
+-      document.getElementById('domainSelect').value = parsedRAG.domainName;
+-      onDomainChanged();
+-      
+-      showToast("✓ PDF RAG imported: " + parsedRAG.domainName);
+-      addLog("✓ Successfully parsed and imported PDF RAG: " + parsedRAG.domainName, "success");
+-    } catch (err) {
+-      console.error(err);
+-      alert("Failed to parse PDF: " + err.message);
+-      addLog("Error parsing PDF: " + err.message, "error");
+-    }
++  function exportDomainJSON() {
++    saveAppState();
++    const domainData = domainDatabase[appState.selectedDomain] || defaultDomainData;
++    
++    // Construct the exported object
++    const exportObj = {
++      domainName: appState.selectedDomain,
++      metadata: {
++        internshipDomain: appState.internshipDomain,
++        internshipTopic: appState.internshipTopic,
++        companyName: appState.companyName,
++        companyAddress: appState.companyAddress,
++        internshipDuration: appState.internshipDuration,
++        mentorName: appState.mentorName,
++        projectTitle: appState.projectTitle,
++        problemStatement: appState.problemStatement,
++        projectObjective: appState.projectObjective,
++        projectDescription: appState.projectDescription,
++        technologiesUsed: appState.technologiesUsed,
++        programmingLanguages: appState.programmingLanguages,
++        toolsUsed: appState.toolsUsed,
++        datasetUsed: appState.datasetUsed,
++        methodology: appState.methodology,
++        numDays: appState.numDays
++      },
++      certBullets: domainData.certBullets || defaultDomainData.certBullets,
++      dailyActivities: appState.dailyActivities || [],
++      chapters: appState.customChapters || domainData.chapters || defaultDomainData.chapters,
++      references: appState.references && appState.references.length > 0 ? appState.references : (domainData.references || defaultDomainData.references)
++    };
++    
++    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
++    const downloadAnchor = document.createElement('a');
++    downloadAnchor.setAttribute("href", dataStr);
++    
++    const safeName = appState.selectedDomain.replace(/[^a-z0-9]/gi, '_').toLowerCase();
++    downloadAnchor.setAttribute("download", `${safeName}_domain.json`);
++    document.body.appendChild(downloadAnchor);
++    downloadAnchor.click();
++    downloadAnchor.remove();
++    
++    addLog("Exported domain configuration as JSON: " + appState.selectedDomain, "success");
++    showToast("✓ Exported domain configuration");
+   }
+ 
+-  function parseReferencePDFText(text) {
+-    let domainName = "";
+-    const domainPatterns = [
+-      /(?:REPORT\s+ON|INTERNSHIP\s+REPORT\s+ON|REPORT\s+OF\s+INTERNSHIP\s+ON)\s*\n*\s*([A-Za-z0-9\s&–\-]{4,60})/i,
+-      /(?:SUMMER\s+INTERNSHIP\s+REPORT\s+ON)\s*\n*\s*([A-Za-z0-9\s&–\-]{4,60})/i,
+-      /(?:INTERNSHIP\s+IN)\s*\n*\s*([A-Za-z0-9\s&–\-]{4,60})/i
+-    ];
++  // Live Side-by-Side Preview Functions
++  function toggleSideBySidePreview(skipLog = false) {
++    const workspace = document.querySelector('.workspace');
++    const sidePreviewPane = document.getElementById('sidePreviewPane');
++    const previewTabBtn = document.getElementById('btn-config-preview');
++    const sidePreviewWrapper = document.getElementById('sidePreviewWrapper');
++    const tabPreviewPanel = document.getElementById('tab-preview');
++    const toggleEl = document.getElementById('toggleSidePreview');
+     
+-    for (const pattern of domainPatterns) {
+-      const match = text.match(pattern);
+-      if (match && match[1]) {
+-        domainName = match[1].trim().replace(/\s+/g, ' ');
+-        domainName = domainName.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.substring(1)).join(' ');
+-        break;
+-      }
+-    }
++    const isActive = toggleEl ? toggleEl.checked : false;
++    appState.sidePreviewActive = isActive;
++    saveAppState();
+     
+-    if (!domainName || domainName.toLowerCase().includes("submitted in partial") || domainName.toLowerCase().includes("bachelor of science")) {
+-      domainName = "Custom Domain";
+-    }
+-
+-    addLog("Parsed Domain Name: " + domainName, "info");
+-
+-    const abbreviations = [];
+-    const lines = text.split('\n');
+-    let inAbbrevSection = false;
++    const canvasWrapper = document.querySelector('.preview-canvas-wrapper');
+     
+-    for (let i = 0; i < lines.length; i++) {
+-      const line = lines[i].trim();
+-      if (!line) continue;
++    if (isActive) {
++      if (workspace) workspace.classList.add('has-side-preview');
++      if (sidePreviewPane) sidePreviewPane.style.display = 'flex';
++      if (previewTabBtn) previewTabBtn.style.display = 'none';
+       
+-      if (line.toUpperCase().includes("LIST OF ABBREVIATIONS") || line.toUpperCase().includes("ABBREVIATIONS")) {
+-        inAbbrevSection = true;
+-        continue;
++      const currentActiveTab = document.querySelector('.tab-config-btn.active');
++      if (currentActiveTab && currentActiveTab.id === 'btn-config-preview') {
++        switchConfigTab('settings');
+       }
+       
+-      if (inAbbrevSection && (line.toUpperCase().includes("CHAPTER") || line.toUpperCase().includes("1.1") || line.toUpperCase().includes("INTRODUCTION"))) {
+-        inAbbrevSection = false;
++      if (canvasWrapper && sidePreviewWrapper) {
++        sidePreviewWrapper.appendChild(canvasWrapper);
+       }
+       
+-      if (inAbbrevSection) {
+-        const parts = line.split(/\s+/);
+-        if (parts.length >= 2) {
+-          const abbr = parts[0].trim();
+-          const fullForm = line.substring(line.indexOf(abbr) + abbr.length).replace(/^[–\-—\s]+/, '').trim();
+-          
+-          if (abbr.length >= 2 && abbr.length <= 12 && (/^[A-Z0-9\/&\-]+$/.test(abbr) || abbr === "DoS")) {
+-            if (fullForm.length > 3) {
+-              abbreviations.push({
+-                abbreviation: abbr,
+-                fullForm: fullForm
+-              });
+-            }
+-          }
+-        }
++      if (!skipLog) {
++        addLog("Enabled side-by-side live preview", "info");
+       }
+-    }
+-    
+-    if (abbreviations.length === 0) {
+-      const defaultData = domainDatabase["AI with Cybersecurity"] || defaultDomainData;
+-      abbreviations.push(...JSON.parse(JSON.stringify(defaultData.abbreviations || [])));
+-    }
+-    addLog(`Parsed ${abbreviations.length} Abbreviations`, "info");
+-
+-    const dailyActivities = [];
+-    const actionVerbs = ["Analyzed", "Explored", "Studied", "Practiced", "Performed", "Revised", "Developed", "Used", "Created", "Captured", "Configured", "Defined", "Implemented", "Integrated", "Validated", "Tested", "Completed", "Conducted", "Audited", "Wrote", "Integrated", "Revised"];
+-    
+-    for (let i = 0; i < lines.length; i++) {
+-      const line = lines[i].trim();
+-      if (!line) continue;
++    } else {
++      if (workspace) workspace.classList.remove('has-side-preview');
++      if (sidePreviewPane) sidePreviewPane.style.display = 'none';
++      if (previewTabBtn) previewTabBtn.style.display = 'inline-block';
+       
+-      const dayMatch = line.match(/^Day\s+(\d+)(?::|-|\s+)?\s*(.*)$/i);
+-      const tableMatch = line.match(/^([1-9]|1\d|2[0-6])\s+(.*)$/);
++      if (canvasWrapper && tabPreviewPanel) {
++        tabPreviewPanel.appendChild(canvasWrapper);
++      }
+       
+-      if (dayMatch) {
+-        const dayNum = parseInt(dayMatch[1]);
+-        const rest = dayMatch[2].trim();
+-        
+-        const words = rest.split(/\s+/);
+-        const titleWords = [];
+-        const descWords = [];
+-        let inDesc = false;
+-        
+-        words.forEach(w => {
+-          if (actionVerbs.includes(w) || inDesc || (w && w[0] === w[0].toLowerCase())) {
+-            inDesc = true;
+-            descWords.push(w);
+-          } else {
+-            titleWords.push(w);
+-          }
+-        });
+-        
+-        dailyActivities.push({
+-          day: dayNum,
+-          title: titleWords.join(' ').trim() || "Activity Logs",
+-          activity: descWords.join(' ').trim() || "Worked on domain-specific activities.",
+-          hours: 4
+-        });
+-      } else if (tableMatch) {
+-        const dayNum = parseInt(tableMatch[1]);
+-        const rest = tableMatch[2].trim();
+-        
+-        const words = rest.split(/\s+/);
+-        const titleWords = [];
+-        const descWords = [];
+-        let inDesc = false;
+-        
+-        words.forEach(w => {
+-          if (actionVerbs.includes(w) || inDesc || (w && w[0] === w[0].toLowerCase())) {
+-            inDesc = true;
+-            descWords.push(w);
+-          } else {
+-            titleWords.push(w);
+-          }
+-        });
+-        
+-        dailyActivities.push({
+-          day: dayNum,
+-          title: titleWords.join(' ').trim() || "Activity Logs",
+-          activity: descWords.join(' ').trim() || "Worked on domain-specific activities.",
+-          hours: 4
+-        });
+-      } else if (dailyActivities.length > 0) {
+-        if (line.length > 0 && !line.includes("Page") && !line.includes("Summer Internship Report") && !line.includes("Reg:")) {
+-          const lastAct = dailyActivities[dailyActivities.length - 1];
+-          if (lastAct.activity.length < 500) {
+-            lastAct.activity += " " + line;
+-          }
+-        }
++      if (!skipLog) {
++        addLog("Disabled side-by-side live preview", "info");
+       }
+     }
+-
+-    const uniqueActivities = [];
+-    const activitiesMap = {};
+-    dailyActivities.forEach(act => {
+-      if (!activitiesMap[act.day] || act.activity.length > activitiesMap[act.day].activity.length) {
+-        activitiesMap[act.day] = act;
+-      }
+-    });
+     
+-    for (let d = 1; d <= 26; d++) {
+-      if (activitiesMap[d]) {
+-        uniqueActivities.push(activitiesMap[d]);
++    // Sync dropdown selections
++    const sidebarSelect = document.getElementById('previewSectionSelect');
++    const sideSelect = document.getElementById('sidePreviewSectionSelect');
++    if (sidebarSelect && sideSelect) {
++      if (isActive) {
++        sideSelect.value = sidebarSelect.value;
++      } else {
++        sidebarSelect.value = sideSelect.value;
+       }
+     }
+-    uniqueActivities.sort((a, b) => a.day - b.day);
+     
+-    if (uniqueActivities.length === 0) {
+-      for (let d = 1; d <= 26; d++) {
+-        uniqueActivities.push({
+-          day: d,
+-          title: `Activity for Day ${d}`,
+-          activity: `Completed scheduled tasks, scripts development and testing under the guidance of the company mentor.`,
+-          hours: 4
+-        });
+-      }
+-    }
+-    addLog(`Parsed ${uniqueActivities.length} Daily Log Entries`, "info");
++    const activeSelectId = isActive ? 'sidePreviewSectionSelect' : 'previewSectionSelect';
++    renderPreviewContent(activeSelectId);
++  }
+ 
+-    const chapters = { ch1: [], ch2: [], ch3: [], ch4: [], ch5: [], ch6: [] };
+-    const rawChapters = text.split(/(?:CHAPTER|Chapter)\s+(\d+)/i);
++  function renderPreviewContent(sourceId) {
++    const selectEl = document.getElementById(sourceId);
++    if (!selectEl) return;
++    const section = selectEl.value;
+     
+-    for (let cIdx = 1; cIdx < rawChapters.length; cIdx += 2) {
+-      const chNum = parseInt(rawChapters[cIdx]);
+-      const chContent = rawChapters[cIdx + 1] || "";
+-      if (chNum >= 1 && chNum <= 6) {
+-        const chKey = `ch${chNum}`;
+-        const sectionsList = [];
+-        const chLines = chContent.split('\n');
+-        
+-        let currentSection = null;
+-        let currentParas = [];
+-        let activeParagraph = "";
+-        let inDailyLogTable = false;
+-        
+-        const headingRegex = new RegExp(`^(${chNum}\\.\\d+(?:\\.\\d+)?)\\s+(.+)$`);
++    const sidebarSelect = document.getElementById('previewSectionSelect');
++    const sideSelect = document.getElementById('sidePreviewSectionSelect');
++    if (sourceId === 'previewSectionSelect' && sideSelect) {
++      sideSelect.value = section;
++    } else if (sourceId === 'sidePreviewSectionSelect' && sidebarSelect) {
++      sidebarSelect.value = section;
++    }
++    
++    const previewCard = document.getElementById('previewCard');
++    const textPreviewBox = document.getElementById('textPreviewBox');
++    const textPreviewTitle = document.getElementById('textPreviewTitle');
++    const textPreviewBody = document.getElementById('textPreviewBody');
++    
++    if (!previewCard || !textPreviewBox) return;
++    
++    if (section === 'cover') {
++      previewCard.style.display = 'flex';
++      textPreviewBox.style.display = 'none';
++    } else {
++      previewCard.style.display = 'none';
++      textPreviewBox.style.display = 'flex';
++      
++      let title = "";
++      let contentHtml = "";
++      
++      if (section === 'references') {
++        title = "References List";
++        const refs = generateOfflineData('references');
++        if (refs && refs.length > 0) {
++          contentHtml = refs.map((ref, idx) => `<p style="text-indent:-24px; padding-left:24px; margin-bottom:8px;">${idx + 1}. ${ref}</p>`).join('');
++        } else {
++          contentHtml = "<p style='color:var(--text-muted); font-style:italic;'>No references configured.</p>";
++        }
++      } else {
++        const chData = generateOfflineData(section);
++        const chapMeta = chaptersMetadata.find(m => m.id === section);
++        title = chapMeta ? chapMeta.title : section.toUpperCase();
+         
+-        for (let i = 0; i < chLines.length; i++) {
+-          const line = chLines[i].trim();
+-          if (!line) {
+-            if (activeParagraph.trim().length > 0) {
+-              currentParas.push(activeParagraph.trim());
+-              activeParagraph = "";
+-            }
+-            continue;
+-          }
+-          
+-          if (line.includes("Page") || line.includes("Summer Internship Report") || line.includes("Naipunnya") || line.includes("Cherthala") || line.includes("Reg:")) {
+-            continue;
+-          }
+-          
+-          if (chNum === 3) {
+-            if (line.includes("3.5") || line.toUpperCase().includes("DAILY ACTIVITY LOG")) {
+-              inDailyLogTable = true;
+-              if (currentSection) {
+-                if (activeParagraph.trim().length > 0) {
+-                  currentParas.push(activeParagraph.trim());
+-                  activeParagraph = "";
+-                }
+-                sectionsList.push({
+-                  heading: currentSection,
+-                  paragraphs: currentParas.filter(p => p.length > 20),
+-                  bullets: []
+-                });
+-                currentSection = null;
+-              }
+-              continue;
+-            }
+-            if (line.includes("3.6") || line.toUpperCase().includes("TOOLS AND TECHNOLOGIES MASTERED")) {
+-              inDailyLogTable = false;
+-            }
+-          }
+-          
+-          if (inDailyLogTable) {
+-            continue;
+-          }
+-          
+-          const m = line.match(headingRegex);
+-          if (m) {
+-            if (currentSection) {
+-              if (activeParagraph.trim().length > 0) {
+-                currentParas.push(activeParagraph.trim());
+-                activeParagraph = "";
+-              }
+-              sectionsList.push({
+-                heading: currentSection,
+-                paragraphs: currentParas.filter(p => p.length > 20),
+-                bullets: []
++        if (chData && chData.length > 0) {
++          chData.forEach(sec => {
++            contentHtml += `<div style="margin-bottom:12px;">`;
++            contentHtml += `<h4 style="font-weight:bold; color:#1f3864; font-size:0.9rem; margin-bottom:4px;">${sec.heading}</h4>`;
++            
++            (sec.paragraphs || []).forEach(p => {
++              contentHtml += `<p style="margin-bottom:6px; text-indent:24px;">${p}</p>`;
++            });
++            
++            if (sec.bullets && sec.bullets.length > 0) {
++              contentHtml += `<ul style="margin-left:20px; list-style-type:disc; margin-bottom:6px;">`;
++              sec.bullets.forEach(b => {
++                contentHtml += `<li style="margin-bottom:2px;">${b}</li>`;
+               });
++              contentHtml += `</ul>`;
+             }
+-            currentSection = line;
+-            currentParas = [];
+-            activeParagraph = "";
+-          } else {
+-            if (currentSection) {
+-              if (line.startsWith('•') || line.startsWith('-') || line.startsWith('o')) {
+-                if (activeParagraph.trim().length > 0) {
+-                  currentParas.push(activeParagraph.trim());
+-                  activeParagraph = "";
+-                }
+-                const bulletText = line.replace(/^[•\-\*o]\s*/, '').trim();
+-                if (bulletText.length > 0) {
+-                  currentParas.push(bulletText);
+-                }
+-              } else {
+-                activeParagraph += " " + line;
+-              }
+-            }
+-          }
+-        }
+-        
+-        if (currentSection) {
+-          if (activeParagraph.trim().length > 0) {
+-            currentParas.push(activeParagraph.trim());
+-          }
+-          sectionsList.push({
+-            heading: currentSection,
+-            paragraphs: currentParas.filter(p => p.length > 20),
+-            bullets: []
++            contentHtml += `</div>`;
+           });
++        } else {
++          contentHtml = "<p style='color:var(--text-muted); font-style:italic;'>No content available.</p>";
+         }
+-        
+-        chapters[chKey] = sectionsList;
+-      }
+-    }
+-
+-    const defaultData = domainDatabase["AI with Cybersecurity"] || defaultDomainData;
+-    for (let c = 1; c <= 6; c++) {
+-      const chKey = `ch${c}`;
+-      if (chapters[chKey].length === 0) {
+-        addLog(`Warning: No content parsed for Chapter ${c}, loading templates.`, "warning");
+-        chapters[chKey] = JSON.parse(JSON.stringify(defaultData.chapters[chKey] || []));
+-      } else {
+-        addLog(`Parsed Chapter ${c}: ${chapters[chKey].length} sections`, "info");
+       }
++      
++      if (textPreviewTitle) textPreviewTitle.textContent = title;
++      if (textPreviewBody) textPreviewBody.innerHTML = contentHtml;
+     }
+-
+-    const cleanStr = (str) => {
+-      if (!str) return '';
+-      let s = str.replace(/\s+/g, ' ');
+-      s = s.replace("fo r", "for")
+-           .replace("m odels", "models")
+-           .replace("repor t", "report")
+-           .replace("deserializati on", "deserialization")
+-           .replace("explainabi lity", "explainability")
+-           .replace("vulnera bility", "vulnerability")
+-           .replace("in cluding", "including")
+-           .replace("progra mme", "programme")
+-           .replace("speciﬁcally", "specifically");
+-      return s;
+-    };
+-    
+-    Object.keys(chapters).forEach(chKey => {
+-      chapters[chKey].forEach(sec => {
+-        sec.heading = cleanStr(sec.heading);
+-        sec.paragraphs = sec.paragraphs.map(p => cleanStr(p));
+-      });
+-    });
+-    
+-    uniqueActivities.forEach(act => {
+-      act.title = cleanStr(act.title);
+-      act.activity = cleanStr(act.activity);
+-    });
+-
+-    return {
+-      domainName,
+-      metadata: {
+-        internshipDomain: domainName,
+-        internshipTopic: domainName + " System Engineering",
+-        companyName: "{companyName}",
+-        companyAddress: "{companyAddress}",
+-        internshipDuration: "{internshipDuration}",
+-        mentorName: "{mentorName}",
+-        projectTitle: "{projectTitle}",
+-        problemStatement: "{problemStatement}",
+-        projectObjective: "{projectObjective}",
+-        projectDescription: "{projectDescription}",
+-        technologiesUsed: "{technologiesUsed}",
+-        programmingLanguages: "{programmingLanguages}",
+-        toolsUsed: "{toolsUsed}",
+-        datasetUsed: "{datasetUsed}",
+-        methodology: "{methodology}",
+-        numDays: uniqueActivities.length
+-      },
+-      abbreviations,
+-      certBullets: [
+-        "Hands-on exposure to " + domainName + " frameworks.",
+-        "Testing of modules using {programmingLanguages}.",
+-        "Configuration of technical workflows related to {internshipTopic}.",
+-        "Participation in verification protocols under mentorship."
+-      ],
+-      dailyActivities: uniqueActivities,
+-      chapters,
+-      references: [
+-        "Russell, S., & Norvig, P. (2020). Artificial Intelligence: A Modern Approach (4th ed.). Pearson.",
+-        "Official Documentation and Reference Standards for " + domainName
+-      ]
+-    };
+   }
+ 
+   function toggleProjectFields() {
+@@ -3066,6 +3014,7 @@
+     const lines = val.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+     appState.references = lines;
+     saveAppState();
++    updateUI();
+   }
+ 
+   function toggleSectionEditorMode(chKey, secIdx, checked) {
+@@ -3076,6 +3025,7 @@
+     }
+     saveAppState();
+     renderCustomChapterEditor();
++    updateUI();
+   }
+ 
+   function updateCustomBlockText(chKey, secIdx, val) {
+@@ -3097,6 +3047,7 @@
+     
+     saveAppState();
+     refreshChapterVisuals(chKey);
++    updateUI();
+   }
+ 
+   function updateCustomSectionHeading(chKey, secIdx, val) {
+@@ -3104,6 +3055,7 @@
+     appState.customChapters[chKey][secIdx].heading = val;
+     saveAppState();
+     refreshChapterVisuals(chKey);
++    updateUI();
+   }
+ 
+   function updateCustomParagraph(chKey, secIdx, paraIdx, val) {
+@@ -3123,6 +3075,7 @@
+     
+     saveAppState();
+     refreshChapterVisuals(chKey);
++    updateUI();
+   }
+ 
+   function addCustomParagraph(chKey, secIdx) {
+@@ -3130,6 +3083,7 @@
+     appState.customChapters[chKey][secIdx].paragraphs.push('');
+     saveAppState();
+     renderCustomChapterEditor();
++    updateUI();
+   }
+ 
+   function deleteCustomParagraph(chKey, secIdx, paraIdx) {
+@@ -3137,6 +3091,7 @@
+     appState.customChapters[chKey][secIdx].paragraphs.splice(paraIdx, 1);
+     saveAppState();
+     renderCustomChapterEditor();
++    updateUI();
+   }
+ 
+   function updateCustomBullet(chKey, secIdx, bulIdx, val) {
+@@ -3144,6 +3099,7 @@
+     appState.customChapters[chKey][secIdx].bullets[bulIdx] = val;
+     saveAppState();
+     refreshChapterVisuals(chKey);
++    updateUI();
+   }
+ 
+   function addCustomBullet(chKey, secIdx) {
+@@ -3154,6 +3110,7 @@
+     appState.customChapters[chKey][secIdx].bullets.push('');
+     saveAppState();
+     renderCustomChapterEditor();
++    updateUI();
+   }
+ 
+   function deleteCustomBullet(chKey, secIdx, bulIdx) {
+@@ -3161,6 +3118,7 @@
+     appState.customChapters[chKey][secIdx].bullets.splice(bulIdx, 1);
+     saveAppState();
+     renderCustomChapterEditor();
++    updateUI();
+   }
+ 
+   function resetCustomChaptersToDefault() {
+@@ -3177,6 +3135,7 @@
+       appState.customChaptersDomain = appState.selectedDomain;
+       saveAppState();
+       renderCustomChapterEditor();
++      updateUI();
+       showToast("↺ Customized chapters reset to default");
+       addLog("Reset customized chapters to domain defaults.", "info");
+     }
+@@ -3217,13 +3176,13 @@
+       tr.innerHTML = `
+         <td class="daily-row-day">Day ${d}</td>
+         <td class="daily-row-title">
+-          <input type="text" id="day-title-${d}" oninput="saveAppState()" value="${titleVal}" placeholder="e.g. System Overview" />
++          <input type="text" id="day-title-${d}" oninput="updateUI()" value="${titleVal}" placeholder="e.g. System Overview" />
+         </td>
+         <td class="daily-row-activity">
+-          <textarea id="day-desc-${d}" rows="2" oninput="saveAppState()" placeholder="e.g. Conducted basic checks...">${descVal}</textarea>
++          <textarea id="day-desc-${d}" rows="2" oninput="updateUI()" placeholder="e.g. Conducted basic checks...">${descVal}</textarea>
+         </td>
+         <td class="daily-row-hours">
+-          <input type="number" min="1" max="24" id="day-hours-${d}" oninput="saveAppState()" value="${hoursVal}" placeholder="4" />
++          <input type="number" min="1" max="24" id="day-hours-${d}" oninput="updateUI()" value="${hoursVal}" placeholder="4" />
+         </td>
+       `;
+       tableBody.appendChild(tr);
+@@ -3252,7 +3211,13 @@
+ 
+   // Page Budget Algorithm
+   function calculatePageBudget(totalPages) {
+-    const prelimPages = 6;
++    let prelimPages = 1; // Cover Page is always included
++    if (appState.includeBonafide) prelimPages += 1;
++    if (appState.includeCompanyCert) prelimPages += 1;
++    if (appState.includeDeclaration) prelimPages += 1;
++    if (appState.includeAcknowledgement) prelimPages += 1;
++    if (appState.includeTOC) prelimPages += 1;
++
+     let remaining = totalPages - prelimPages;
+     if (remaining < 10) {
+       remaining = 10;
+@@ -3305,6 +3270,30 @@
+   function updateUI() {
+     saveAppState();
+ 
++    // Calculate total logged hours
++    let totalHours = 0;
++    const numDays = parseInt(appState.numDays) || 26;
++    const activities = appState.dailyActivities || [];
++    for (let d = 1; d <= numDays; d++) {
++      const existing = activities.find(item => item.day === d);
++      if (existing) {
++        totalHours += existing.hours !== undefined ? existing.hours : 4;
++      } else {
++        const domainData = domainDatabase[appState.selectedDomain];
++        if (domainData && domainData.dailyActivities) {
++          const defaultAct = domainData.dailyActivities[(d - 1) % domainData.dailyActivities.length] || {};
++          totalHours += defaultAct.hours !== undefined ? defaultAct.hours : 4;
++        } else {
++          totalHours += 4;
++        }
++      }
++    }
++    
++    const statsDaysEl = document.getElementById('statsDays');
++    if (statsDaysEl) statsDaysEl.textContent = `${numDays} Days`;
++    const statsHoursEl = document.getElementById('statsHours');
++    if (statsHoursEl) statsHoursEl.textContent = `${totalHours} Hours`;
++
+     // Update cover page preview
+     document.getElementById('prev-collegeName').textContent = appState.collegeName.toUpperCase() || 'COLLEGE NAME';
+     document.getElementById('prev-collegeLocation').textContent = appState.collegeLocation || 'Location';
+@@ -3370,6 +3359,14 @@
+         <div class="legend-item"><span class="legend-color" style="background:${colors.refApp}"></span><span>Ref/App (${budget.ref + budget.app}p)</span></div>
+       `;
+     }
++
++    // Render live preview content
++    const sidebarSelect = document.getElementById('previewSectionSelect');
++    if (sidebarSelect) {
++      const isSideActive = document.getElementById('toggleSidePreview')?.checked;
++      const activeSelectId = isSideActive ? 'sidePreviewSectionSelect' : 'previewSectionSelect';
++      renderPreviewContent(activeSelectId);
++    }
+   }
+ 
+   // Dynamic guide pronoun helper
+@@ -3577,16 +3574,48 @@
+ 
+     const budgetVal = calculatePageBudget(appState.totalPages || 32);
+     
+-    // Calculate dynamic starting page numbers based on actual content length
++    // Calculate dynamic starting page numbers based on actual content length and structure toggles
+     const startPages = {};
+-    startPages.cover = 1;
+-    startPages.bonafide = 2;
+-    startPages.companyCert = 3;
+-    startPages.declaration = 4;
+-    startPages.acknowledgement = 5;
+-    startPages.toc = 6;
++    let pagePtr = 1;
++    startPages.cover = pagePtr;
++    pagePtr += 1;
++    
++    if (appState.includeBonafide) {
++      startPages.bonafide = pagePtr;
++      pagePtr += 1;
++    } else {
++      startPages.bonafide = 0;
++    }
++    
++    if (appState.includeCompanyCert) {
++      startPages.companyCert = pagePtr;
++      pagePtr += 1;
++    } else {
++      startPages.companyCert = 0;
++    }
+     
+-    let currentPage = 7; // Chapter 1 starts on Page 7
++    if (appState.includeDeclaration) {
++      startPages.declaration = pagePtr;
++      pagePtr += 1;
++    } else {
++      startPages.declaration = 0;
++    }
++    
++    if (appState.includeAcknowledgement) {
++      startPages.acknowledgement = pagePtr;
++      pagePtr += 1;
++    } else {
++      startPages.acknowledgement = 0;
++    }
++    
++    if (appState.includeTOC) {
++      startPages.toc = pagePtr;
++      pagePtr += 1;
++    } else {
++      startPages.toc = 0;
++    }
++    
++    let currentPage = pagePtr;
+     
+     startPages.ch1 = currentPage;
+     currentPage += estimateChapterPages(chapters.ch1, { isCh1: true });
+@@ -3969,44 +3998,6 @@
+       p(S.studentName, true, false, AlignmentType.RIGHT)
+     ];
+ 
+-    // 6. TABLE OF CONTENTS
+-    const tocRows = [
+-      new TableRow({
+-        cantSplit: true,
+-        tblHeader: true,
+-        children: [
+-          makeCell("Sl. No.", true, 'FFFFFF', AlignmentType.LEFT, 1000),
+-          makeCell("Content", true, 'FFFFFF', AlignmentType.LEFT, 7360),
+-          makeCell("Page No.", true, 'FFFFFF', AlignmentType.CENTER, 1000)
+-        ]
+-      }),
+-      new TableRow({ cantSplit: true, children: [makeCell("1", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Cover Page", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell("1", false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+-      new TableRow({ cantSplit: true, children: [makeCell("2", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Bonafide Certificate", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.bonafide.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+-      new TableRow({ cantSplit: true, children: [makeCell("3", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Certificate from Internship Organization", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.companyCert.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+-      new TableRow({ cantSplit: true, children: [makeCell("4", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Declaration", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.declaration.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+-      new TableRow({ cantSplit: true, children: [makeCell("5", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Acknowledgement", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.acknowledgement.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+-      new TableRow({ cantSplit: true, children: [makeCell("6", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Table of Contents", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.toc.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+-      new TableRow({ cantSplit: true, children: [makeCell("7", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Chapter 1 – Introduction", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.ch1.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+-      new TableRow({ cantSplit: true, children: [makeCell("8", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Chapter 2 – Organization Profile", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.ch2.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+-      new TableRow({ cantSplit: true, children: [makeCell("9", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Chapter 3 – Internship Activities", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.ch3.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+-      new TableRow({ cantSplit: true, children: [makeCell("10", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell(S.noProject ? "Chapter 4 – Technical Learning & Skill Acquisition" : "Chapter 4 – Project Work / Technical Learning", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.ch4.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+-      new TableRow({ cantSplit: true, children: [makeCell("11", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Chapter 5 – Findings & Learning Outcomes", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.ch5.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+-      new TableRow({ cantSplit: true, children: [makeCell("12", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Chapter 6 – Conclusion", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.ch6.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+-      new TableRow({ cantSplit: true, children: [makeCell("13", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("References", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.references.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+-      new TableRow({ cantSplit: true, children: [makeCell("14", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Appendices", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.appendices.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] })
+-    ];
+-
+-    const tocChildren = [
+-      p("TABLE OF CONTENTS", true, false, AlignmentType.CENTER, 28, { before: 0, after: 240 }),
+-      dividerLine(),
+-      ...blankLine(1),
+-      new Table({
+-        width: { size: 9360, type: WidthType.DXA },
+-        columnWidths: [1000, 7360, 1000],
+-        rows: tocRows
+-      })
+-    ];
+-
+     // Build Daily Activity Table
+     const activityRows = [
+       new TableRow({
+@@ -4137,27 +4128,95 @@
+       p("Academic screenshots and core python script listings built during environment setup, Wireshark traffic scanning, and SQLite databases.", false, true)
+     ];
+ 
+-    const allChildren = [
+-      ...coverChildren,
+-      new Paragraph({ pageBreakBefore: true, children: [] }),
+-      ...certChildren,
+-      new Paragraph({ pageBreakBefore: true, children: [] }),
+-      ...companyCertChildren,
+-      new Paragraph({ pageBreakBefore: true, children: [] }),
+-      ...declChildren,
+-      new Paragraph({ pageBreakBefore: true, children: [] }),
+-      ...ackChildren,
+-      new Paragraph({ pageBreakBefore: true, children: [] }),
+-      ...tocChildren,
+-      ...ch1Children,
+-      ...ch2Children,
+-      ...ch3Narrative,
+-      ...ch4Children,
+-      ...ch5Children,
+-      ...ch6Children,
+-      ...referencesChildren,
+-      ...appendicesChildren
+-    ];
++    const allChildren = [];
++    allChildren.push(...coverChildren);
++
++    if (S.includeBonafide) {
++      allChildren.push(new Paragraph({ pageBreakBefore: true, children: [] }));
++      allChildren.push(...certChildren);
++    }
++
++    if (S.includeCompanyCert) {
++      allChildren.push(new Paragraph({ pageBreakBefore: true, children: [] }));
++      allChildren.push(...companyCertChildren);
++    }
++
++    if (S.includeDeclaration) {
++      allChildren.push(new Paragraph({ pageBreakBefore: true, children: [] }));
++      allChildren.push(...declChildren);
++    }
++
++    if (S.includeAcknowledgement) {
++      allChildren.push(new Paragraph({ pageBreakBefore: true, children: [] }));
++      allChildren.push(...ackChildren);
++    }
++
++    if (S.includeTOC) {
++      const finalTOCRows = [
++        new TableRow({
++          cantSplit: true,
++          tblHeader: true,
++          children: [
++            makeCell("Sl. No.", true, 'FFFFFF', AlignmentType.LEFT, 1000),
++            makeCell("Content", true, 'FFFFFF', AlignmentType.LEFT, 7360),
++            makeCell("Page No.", true, 'FFFFFF', AlignmentType.CENTER, 1000)
++          ]
++        })
++      ];
++
++      let slNo = 1;
++      finalTOCRows.push(new TableRow({ cantSplit: true, children: [makeCell(String(slNo++), false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Cover Page", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell("1", false, 'FFFFFF', AlignmentType.CENTER, 1000)] }));
++
++      if (S.includeBonafide) {
++        finalTOCRows.push(new TableRow({ cantSplit: true, children: [makeCell(String(slNo++), false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Bonafide Certificate", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.bonafide.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }));
++      }
++
++      if (S.includeCompanyCert) {
++        finalTOCRows.push(new TableRow({ cantSplit: true, children: [makeCell(String(slNo++), false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Certificate from Internship Organization", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.companyCert.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }));
++      }
++
++      if (S.includeDeclaration) {
++        finalTOCRows.push(new TableRow({ cantSplit: true, children: [makeCell(String(slNo++), false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Declaration", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.declaration.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }));
++      }
++
++      if (S.includeAcknowledgement) {
++        finalTOCRows.push(new TableRow({ cantSplit: true, children: [makeCell(String(slNo++), false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Acknowledgement", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.acknowledgement.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }));
++      }
++
++      finalTOCRows.push(new TableRow({ cantSplit: true, children: [makeCell(String(slNo++), false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Table of Contents", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.toc.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }));
++
++      finalTOCRows.push(new TableRow({ cantSplit: true, children: [makeCell(String(slNo++), false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Chapter 1 – Introduction", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.ch1.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }));
++      finalTOCRows.push(new TableRow({ cantSplit: true, children: [makeCell(String(slNo++), false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Chapter 2 – Organization Profile", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.ch2.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }));
++      finalTOCRows.push(new TableRow({ cantSplit: true, children: [makeCell(String(slNo++), false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Chapter 3 – Internship Activities", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.ch3.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }));
++      finalTOCRows.push(new TableRow({ cantSplit: true, children: [makeCell(String(slNo++), false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell(S.noProject ? "Chapter 4 – Technical Learning & Skill Acquisition" : "Chapter 4 – Project Work / Technical Learning", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.ch4.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }));
++      finalTOCRows.push(new TableRow({ cantSplit: true, children: [makeCell(String(slNo++), false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Chapter 5 – Findings & Learning Outcomes", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.ch5.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }));
++      finalTOCRows.push(new TableRow({ cantSplit: true, children: [makeCell(String(slNo++), false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Chapter 6 – Conclusion", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.ch6.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }));
++      finalTOCRows.push(new TableRow({ cantSplit: true, children: [makeCell(String(slNo++), false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("References", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.references.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }));
++      finalTOCRows.push(new TableRow({ cantSplit: true, children: [makeCell(String(slNo++), false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Appendices", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.appendices.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }));
++
++      const dynamicTOCChildren = [
++        p("TABLE OF CONTENTS", true, false, AlignmentType.CENTER, 28, { before: 0, after: 240 }),
++        dividerLine(),
++        ...blankLine(1),
++        new Table({
++          width: { size: 9360, type: WidthType.DXA },
++          columnWidths: [1000, 7360, 1000],
++          rows: finalTOCRows
++        })
++      ];
++
++      allChildren.push(new Paragraph({ pageBreakBefore: true, children: [] }));
++      allChildren.push(...dynamicTOCChildren);
++    }
++
++    allChildren.push(...ch1Children);
++    allChildren.push(...ch2Children);
++    allChildren.push(...ch3Narrative);
++    allChildren.push(...ch4Children);
++    allChildren.push(...ch5Children);
++    allChildren.push(...ch6Children);
++    allChildren.push(...referencesChildren);
++    allChildren.push(...appendicesChildren);
+ 
+     const header = new Header({
+       children: [
