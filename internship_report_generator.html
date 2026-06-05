@@ -1,0 +1,4375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kerala University FYUGP Internship Report Generator</title>
+  
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Alex+Brush&display=swap" rel="stylesheet">
+  
+  <!-- docx.js library (v7.1.0 UMD build via CDN) -->
+  <script src="https://unpkg.com/docx@7.1.0/build/index.js"></script>
+  
+  <!-- pdf.js library (v2.16.105 UMD build via CDN) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+
+  <style>
+    /* Premium Hybrid Theme Design System */
+    :root {
+      --bg-sidebar: #0f172a;
+      --bg-main: #f8fafc;
+      --bg-card: #ffffff;
+      --border-color: #e2e8f0;
+      --border-focus: #6366f1;
+      --text-main: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+      --success: #10b981;
+      --error: #ef4444;
+      --warning: #f59e0b;
+      --info: #0ea5e9;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --transition: all 0.2s ease-in-out;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.05);
+      --font-ui: 'Outfit', 'Inter', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: var(--bg-sidebar);
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      z-index: 100;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Professional Emblem Logo styles */
+    .logo-emblem {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+    }
+    .logo-emblem:hover {
+      transform: scale(1.05) rotate(5deg);
+      filter: drop-shadow(0 4px 8px rgba(212, 175, 55, 0.4));
+    }
+
+    .logo-text h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-text span {
+      display: block;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.8rem;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: #fff;
+    }
+
+    /* Workspace Layout */
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      flex: 1;
+      height: calc(100vh - 4.5rem);
+      overflow: hidden;
+    }
+
+    /* Main Editor Area */
+    .editor-flow {
+      padding: 2rem 4rem;
+      overflow-y: auto;
+      background: #f1f5f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    /* Tabs at Top of Flow */
+    .flow-tabs {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+      max-width: 900px;
+      border-bottom: 2px solid #cbd5e1;
+      padding-bottom: 8px;
+    }
+
+    .flow-tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-family: var(--font-ui);
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      transition: var(--transition);
+    }
+
+    .flow-tab-btn.active {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+    }
+
+    .editor-container {
+      max-width: 900px;
+      width: 100%;
+      display: none;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .editor-container.active {
+      display: flex;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 2rem;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: #cbd5e1;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: var(--text-main);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      letter-spacing: -0.01em;
+      border-bottom: 2px solid var(--bg-main);
+      padding-bottom: 8px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.2rem;
+    }
+
+    .field-grid.full-width-fields > div {
+      grid-column: span 2;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field.span-2 {
+      grid-column: span 2;
+    }
+
+    label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+
+    input, select, textarea {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: var(--text-main);
+      padding: 0.65rem 0.85rem;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-ui);
+      font-size: 0.88rem;
+      transition: var(--transition);
+      width: 100%;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    .checkbox-field {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .checkbox-field input {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    /* Daily Log Table Grid */
+    .daily-log-grid {
+      width: 100%;
+      margin-top: 1rem;
+      border-collapse: collapse;
+    }
+
+    .daily-log-grid th {
+      background: #f1f5f9;
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 2px solid #cbd5e1;
+    }
+
+    .daily-log-grid td {
+      padding: 8px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: top;
+    }
+
+    .daily-row-day {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--accent);
+      padding-top: 12px;
+      text-align: center;
+      width: 60px;
+    }
+
+    .daily-row-title input {
+      padding: 0.4rem 0.6rem;
+      font-size: 0.82rem;
+    }
+
+    .daily-row-activity textarea {
+      padding: 0.4rem 0.6rem;
+      font-size: 0.82rem;
+      font-family: inherit;
+    }
+
+    .daily-row-hours {
+      width: 80px;
+      text-align: center;
+    }
+
+    .daily-row-hours input {
+      padding: 0.4rem 0.6rem;
+      font-size: 0.82rem;
+      text-align: center;
+    }
+
+    .btn-ai-autofill {
+      background: var(--bg-sidebar);
+      color: #fff;
+      border: 1px solid var(--border-color);
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--transition);
+    }
+
+    .btn-ai-autofill:hover:not(:disabled) {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .btn-ai-autofill:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Chapter Dashboard Rows */
+    .chapter-row {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      transition: var(--transition);
+    }
+
+    .chapter-row:hover {
+      border-color: #cbd5e1;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .chapter-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chapter-title-text {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text-main);
+    }
+
+    .chapter-badge {
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-weight: 700;
+      margin-left: 10px;
+      text-transform: uppercase;
+    }
+
+    .badge-not-started { background: #e2e8f0; color: #475569; }
+    .badge-generating { background: #fef3c7; color: #d97706; }
+    .badge-completed { background: #d1fae5; color: #059669; }
+    .badge-modified { background: #dbeafe; color: #2563eb; }
+
+    .chapter-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-chapter {
+      padding: 0.45rem 0.85rem;
+      font-family: var(--font-ui);
+      font-weight: 600;
+      font-size: 0.82rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-chapter-primary {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+    }
+
+    .btn-chapter-primary:hover:not(:disabled) { background: var(--accent-hover); }
+
+    .btn-chapter-secondary {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+    }
+
+    .btn-chapter-secondary:hover:not(:disabled) {
+      border-color: var(--text-secondary);
+      color: var(--text-main);
+    }
+
+    .btn-chapter:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* Chapter Editor Panel */
+    .chapter-edit-panel {
+      display: none;
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      margin-top: 0.5rem;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .edit-section-card {
+      background: #fff;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .edit-section-header {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--accent);
+    }
+
+    /* Dark Sidebar Configuration */
+    .sidebar-config {
+      background: var(--bg-sidebar);
+      color: #fff;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      border-left: 1px solid rgba(255,255,255,0.05);
+      overflow-y: auto;
+    }
+
+    .sidebar-title {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 8px;
+      color: #cbd5e1;
+    }
+
+    .sidebar-config label {
+      color: #94a3b8;
+    }
+
+    .sidebar-config input, .sidebar-config select, .sidebar-config textarea {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+    }
+
+    .sidebar-config input:focus, .sidebar-config select:focus, .sidebar-config textarea:focus {
+      background: rgba(255,255,255,0.1);
+      border-color: var(--border-focus);
+    }
+
+    /* API Status indicators */
+    .api-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .api-status-disconnected { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+    .api-status-validating { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .api-status-connected { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+
+    /* Progress Visualizer */
+    .budget-visualizer {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .budget-bar {
+      display: flex;
+      height: 10px;
+      border-radius: 5px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .budget-segment {
+      height: 100%;
+    }
+
+    .budget-legend {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      font-size: 0.72rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #94a3b8;
+    }
+
+    .legend-color {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* Tabs inside configuration sidebar */
+    .tabs-config {
+      display: flex;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      gap: 6px;
+    }
+
+    .tab-config-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      padding: 0.5rem 0.8rem;
+      font-family: var(--font-ui);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+
+    .tab-config-btn.active {
+      color: #6366f1;
+      border-bottom-color: #6366f1;
+    }
+
+    .panel-config {
+      display: none;
+      flex-direction: column;
+      gap: 1.2rem;
+      flex: 1;
+    }
+
+    .panel-config.active {
+      display: flex;
+    }
+
+    /* Logs view */
+    .log-card {
+      background: #020617;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-sm);
+      padding: 0.8rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--success);
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 200px;
+    }
+
+    .log-line {
+      display: flex;
+      gap: 6px;
+      line-height: 1.3;
+    }
+
+    .log-time {
+      color: var(--text-muted);
+    }
+
+    .log-info { color: var(--info); }
+    .log-warning { color: var(--warning); }
+    .log-error { color: var(--error); }
+    .log-success { color: var(--success); }
+
+    /* Action button */
+    .btn-generate {
+      background: var(--accent-gradient);
+      color: #fff;
+      border: none;
+      padding: 0.85rem 1.2rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-weight: 700;
+      font-size: 0.92rem;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+      transition: var(--transition);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-generate:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-generate:disabled {
+      background: var(--text-muted);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Cover Preview Canvas */
+    .preview-canvas-wrapper {
+      display: flex;
+      flex-direction: column;
+      padding: 1rem 0;
+      overflow-y: auto;
+      flex: 1;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .preview-card {
+      background: #fff;
+      color: #111;
+      width: 100%;
+      max-width: 320px;
+      height: 450px;
+      border-radius: var(--radius-sm);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-md);
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 0.52rem;
+      line-height: 1.4;
+      text-align: justify;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border-color);
+      position: relative;
+    }
+
+    .preview-header {
+      text-align: center;
+      margin-bottom: 0.5rem;
+      border-bottom: 1px solid #1f3864;
+      padding-bottom: 0.3rem;
+    }
+
+    .preview-header h2 {
+      font-size: 0.65rem;
+      color: #1f3864;
+      font-weight: bold;
+    }
+
+    .preview-section-title {
+      color: #1f3864;
+      font-size: 0.55rem;
+      font-weight: bold;
+      margin-top: 0.6rem;
+      margin-bottom: 0.3rem;
+      border-bottom: 0.5px solid #b8c6e0;
+      padding-bottom: 2px;
+    }
+
+    .preview-meta-row {
+      display: grid;
+      grid-template-columns: 80px 10px 1fr;
+      gap: 4px;
+      margin-bottom: 2px;
+    }
+
+    .preview-meta-label {
+      font-weight: bold;
+      color: #444;
+    }
+
+    /* Chapter Text Preview */
+    .text-preview-container {
+      background: #fff;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 1.2rem;
+      color: #334155;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      width: 100%;
+      max-width: 320px;
+      text-align: justify;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .text-preview-header {
+      font-family: var(--font-ui);
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--accent);
+      border-bottom: 1.5px solid var(--accent);
+      padding-bottom: 4px;
+    }
+
+    .api-key-container {
+      display: flex;
+      position: relative;
+    }
+
+    .api-key-container input {
+      padding-right: 2.2rem;
+    }
+
+    .btn-toggle-visibility {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #0f172a;
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      padding: 0.7rem 1.4rem;
+      border-radius: var(--radius-sm);
+      z-index: 1000;
+      box-shadow: var(--shadow-lg);
+      transition: var(--transition);
+      opacity: 0;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    @media (max-width: 1000px) {
+      .workspace {
+        grid-template-columns: 1fr;
+        height: auto;
+        overflow: visible;
+      }
+      .editor-flow {
+        padding: 1.5rem;
+        height: auto;
+      }
+      .sidebar-config {
+        border-left: none;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        height: auto;
+      }
+    }
+
+    /* Glassmorphism Confirmation Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 2.2rem;
+      width: 90%;
+      max-width: 440px;
+      box-shadow: var(--shadow-lg), 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      transform: scale(0.9) translateY(20px);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .modal-overlay.show .modal-card {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      width: 60px;
+      height: 60px;
+      background: rgba(239, 68, 68, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--error);
+      animation: pulseWarning 2s infinite;
+    }
+
+    @keyframes pulseWarning {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+      70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    .modal-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin-bottom: 0.75rem;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+    }
+
+    .modal-message {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      margin-bottom: 1.8rem;
+      line-height: 1.5;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 0.75rem 1.2rem;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-family: var(--font-ui);
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .modal-btn-cancel {
+      background: #f1f5f9;
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+    }
+
+    .modal-btn-cancel:hover {
+      background: #e2e8f0;
+      color: var(--text-main);
+    }
+
+    .modal-btn-confirm {
+      background: var(--error);
+      color: #fff;
+      border: none;
+    }
+
+    .modal-btn-confirm:hover {
+      background: #dc2626;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+    }
+
+    /* Section Layout with Visual Page Previews */
+    .section-flex-container {
+      display: flex;
+      gap: 1.5rem;
+      width: 100%;
+      align-items: stretch;
+    }
+
+    @media (max-width: 650px) {
+      .section-flex-container {
+        flex-direction: column;
+      }
+      .section-preview-col {
+        align-self: center;
+      }
+    }
+
+    .section-inputs-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    .section-preview-col {
+      width: 110px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem;
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+    }
+
+    .mini-page-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    .mini-page-container {
+      width: 76px;
+      height: 98px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      padding: 6px;
+      gap: 2.2px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .mini-page-container:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: var(--shadow-md), 0 8px 12px -3px rgba(99, 102, 241, 0.1);
+      border-color: var(--border-focus);
+    }
+
+    .mini-page-line {
+      height: 1.8px;
+      width: 100%;
+      border-radius: 0.5px;
+      background: #f1f5f9;
+      transition: background-color 0.2s ease;
+    }
+
+    .mini-page-line.filled {
+      background: #6366f1;
+    }
+
+    .mini-page-line.overflow {
+      background: var(--warning);
+    }
+
+    .mini-page-badge {
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: #fff;
+      background: var(--accent);
+      padding: 2px 5px;
+      border-radius: 8px;
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+      box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
+    }
+
+    .mini-page-percent {
+      font-size: 0.68rem;
+      font-weight: 700;
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    .mini-page-percent.filled {
+      color: var(--success);
+    }
+
+    .mini-page-percent.underfilled {
+      color: var(--text-secondary);
+    }
+
+    .mini-page-percent.warning {
+      color: var(--warning);
+    }
+
+    .para-recommendation-badge {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: #f1f5f9;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-bottom: 4px;
+    }
+
+    .para-word-count {
+      font-weight: 700;
+    }
+
+    .para-word-count.success {
+      color: var(--success);
+    }
+
+    .para-word-count.warning {
+      color: var(--warning);
+    }
+
+    .para-word-count.info {
+      color: var(--info);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-container">
+    <div class="logo-emblem">
+      <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 50.436 53.87" style="display: block;">
+        <path class="logo" id="Path_33" data-name="Path 33" d="M5252.01,6827.287l.336-.6,1.561.932a3.221,3.221,0,0,0,.493.264.512.512,0,0,0,.388-.013.746.746,0,0,0,.33-.334.714.714,0,0,0,.112-.446.479.479,0,0,0-.161-.306,3.567,3.567,0,0,0-.475-.318l-1.593-.953.335-.6,1.515.9a4.661,4.661,0,0,1,.706.487.975.975,0,0,1,.261.4,1.12,1.12,0,0,1,.041.49,1.859,1.859,0,0,1-.234.628,1.9,1.9,0,0,1-.458.591,1,1,0,0,1-.441.2.876.876,0,0,1-.415-.023,4,4,0,0,1-.762-.377l-1.538-.918Zm24.473,4.663h.092a2.22,2.22,0,0,0,.318-.054v.054c0,.543-.272,1.072-.794,1.072-.2,0-.435-.12-.435-.3v-.119a.168.168,0,0,1,.141-.159h.025c.189,0,.277.266.308.266a.542.542,0,0,0,.285-.171.59.59,0,0,0,.111-.347.727.727,0,0,0-.051-.237Zm-.345-.49a1.637,1.637,0,0,0,.368-.032c.114-.027.209-.079.3-.1l.041.238c-.068.006-.188.067-.271.067h-.1l-.205-.029-.128-.144Zm-.486-.584.319.032.18,0a2.793,2.793,0,0,0,.5-.12c0,.083.05.157.05.213s-.321.132-.422.132h-.051l-.449-.062-.138-.176-.017-.025.029.011Zm.9-.688.028.252c0,.057-.416.146-.5.146H5276a1.923,1.923,0,0,1-.36-.051,2.772,2.772,0,0,0-.318-.094l-.118-.213a2.607,2.607,0,0,0,1.347-.041Zm-1.619-.537a2.812,2.812,0,0,0,1.593.014v.192a2.1,2.1,0,0,1-1.3.031c-.115-.04-.289-.092-.316-.216l-.013-.026.033,0Zm1.605-.562.026-.015-.012.066-.016.188c-.111,0-.245.068-.381.079s-.245.039-.41.039h-.1a2.149,2.149,0,0,1-.7-.135c-.086-.026-.234-.078-.272-.155a2.44,2.44,0,0,1-.126-.293,2.362,2.362,0,0,0,1.177.4h.128a1.557,1.557,0,0,0,.69-.174Zm.715-.811a1.592,1.592,0,0,0,.1-.435l0-.146-.018-.118h.3a7.025,7.025,0,0,1,.932.041c.125.02.313.031.451.037s.307.052.437.052v.039a4.789,4.789,0,0,1-.677,1.581,12.517,12.517,0,0,0-.733,1.522,6.572,6.572,0,0,0-.249.88c-.03.145-.058.344-.1.471s-.083.31-.121.445a1.35,1.35,0,0,1-1.315.916h-.089a1.531,1.531,0,0,1-.842-.308,1.133,1.133,0,0,1-.438-.711v-.225a.812.812,0,0,1,.64-.73h.128a.485.485,0,0,1,.354.219c.061.085.2.237.2.365v.093c-.108-.03-.16-.16-.4-.16a.506.506,0,0,0-.474.545v.012a.713.713,0,0,0,.769.69h.013a1.23,1.23,0,0,0,1.076-1.312v-.2a3.932,3.932,0,0,0-.215-1,3.725,3.725,0,0,1-.145-1.065v-.292a3.447,3.447,0,0,1,.051-.491c.031-.261.031-.215.163-.374a1.384,1.384,0,0,0,.194-.343Zm-2.251-.791a.8.8,0,0,1,.832-.782h.154a1.049,1.049,0,0,1,1.05,1.02v.08a1.223,1.223,0,0,1-1.3,1.1,1.668,1.668,0,0,1-.933-.28c-.128-.091-.582-.461-.616-.595l.559-.18a1.064,1.064,0,0,0,.323.46,1.047,1.047,0,0,0,.552.2h.074c.366,0,.745-.22.745-.57v-.132c0-.24-.241-.385-.5-.385l.031.329h.072c.051,0,.089.076.089.137,0,.189-.234.3-.422.3h-.051a.67.67,0,0,1-.654-.7Zm-.331-.146.037-.015-.013.066v.146a1.829,1.829,0,0,0-.36.091c-.112.03-.221.1-.318.119l-.069-.169a2.778,2.778,0,0,1,.723-.239Zm2.509-.279c.205,0,.43.016.612.015a4.749,4.749,0,0,1,.583.035c.172.034.387.016.565.049s.371.033.544.074v.146h-.039c-.125,0-.344-.036-.476-.053-.155-.018-.331-.029-.484-.04-.326-.023-.661-.039-1.01-.039l-.21,0-.083-.182Zm-3.317-.065a2.466,2.466,0,0,1,2.574-2.133h.344a3.141,3.141,0,0,1,1.722.6,2.441,2.441,0,0,1,.575.6,2.238,2.238,0,0,1,.352.827c-.164,0-.405-.053-.6-.066s-.41-.044-.615-.053c-.418-.014-.845-.026-1.294-.026a1.516,1.516,0,0,0-.985-.371h-.1a1.326,1.326,0,0,0-.629.183.988.988,0,0,0-.381.426,2.559,2.559,0,0,0-.5.105c-.083.026-.411.156-.446.16l-.016-.145,0-.107Zm5.927.026a2.239,2.239,0,0,1,.127-.822c.07-.189.252-.448.487-.448h.117c.142,0,.344.117.344.25v.079c0,.072-.045.087-.078.133-.095-.066-.182-.212-.344-.212h-.116c-.246,0-.46.354-.46.637v.066a.69.69,0,0,0,.137.4c.043.049.232.234.3.234.016,0,.112-.106.218-.106a.167.167,0,0,1,.153.146v.053a.124.124,0,0,1-.128.118.212.212,0,0,1-.116-.039,2.78,2.78,0,0,1-.243.159c0,.1.057.2.052.266l-.031.356c-.011.182.143.385.287.385h.09c.147,0,.31-.171.359-.171.021,0,.05.072.05.1v.106a.344.344,0,0,1-.332.319c-.22,0-.313-.355-.422-.438a2.561,2.561,0,0,1-.325.775,1.418,1.418,0,0,1-.611.482c.017-.062.2-.206.254-.281a2.874,2.874,0,0,0,.217-.3,2.028,2.028,0,0,0,.247-.806v-.3c0-.42-.231-.652-.231-1.1v-.039Zm-7.4-1.021c0-.122.19-.25.3-.25h.166c.244,0,.415.262.484.452a2.239,2.239,0,0,1,.129.818c0,.5-.242.727-.242,1.245a2.056,2.056,0,0,0,.217.939,2.345,2.345,0,0,0,.229.347c.078.112.191.171.27.29-.194-.018-.5-.335-.606-.475a2.525,2.525,0,0,1-.315-.771c-.1.072-.223.438-.41.438h-.063c-.132,0-.3-.2-.3-.347v-.026a.189.189,0,0,1,.063-.157.8.8,0,0,0,.382.171h.066a.334.334,0,0,0,.27-.33,2.388,2.388,0,0,1,.038-.677l-.243-.159a.213.213,0,0,1-.1.039h-.027a.142.142,0,0,1-.126-.144.178.178,0,0,1,.18-.173c.078,0,.175.106.218.106.061,0,.262-.213.3-.269a.747.747,0,0,0,.119-.446c0-.271-.226-.624-.475-.624h-.1c-.15,0-.341.212-.347.212-.025,0-.076-.087-.076-.133V6826Zm2.188-1.205c0-.233.53-.438.751-.494a4.928,4.928,0,0,1,1.093-.142h.307c.547,0,1.806.208,1.806.676v.026c0,.037-.052.173-.077.173,0,0-.337-.168-.38-.189a2.373,2.373,0,0,0-.4-.151,3.61,3.61,0,0,0-.946-.163h-.243c-.2,0-.361.039-.538.053a3.472,3.472,0,0,0-.476.118,3.036,3.036,0,0,0-.8.371.36.36,0,0,1-.091-.211v-.066Zm.475-.754-.026.014.012-.026c.208-.322.976-.426,1.523-.426h.09a3.488,3.488,0,0,1,.875.1c.186.047.568.214.609.375a4.11,4.11,0,0,0-1.279-.237h-.461a5.959,5.959,0,0,0-.715.053c-.093.01-.221.051-.321.065s-.221.071-.308.08Zm.7-.7-.025.018.025-.03c.064-.015.194-.066.279-.094a2.27,2.27,0,0,1,.322-.053h.386a1.747,1.747,0,0,1,.587.133l.042.022-.042-.009-.459-.047-.5.007-.613.053Zm.574-.859c0-.109.136-.158.247-.158h.061c.113,0,.257.044.257.158v.371h-.565v-.371Zm-2.071,2.356a.84.84,0,0,0,.049.24c.013.038.1.181.1.184s-.2.182-.221.209c-.068.083-.13.148-.194.237a1.908,1.908,0,0,0-.3.546c-.017-.019-.1-.254-.13-.312a1.031,1.031,0,0,0-.178-.265.851.851,0,0,0-.612-.255.651.651,0,0,0-.7.621v.066c0,.295.315.431.511.53.049-.093.161-.317.282-.317.1,0,.205.172.205.266v.158a.324.324,0,0,1-.128.212.348.348,0,0,0-.14-.04h-.128a.493.493,0,0,0-.409.436v.12a.474.474,0,0,0,.432.413c0,.105.012.168.015.264,0,.048.051.229-.029.2-.1-.032-.212-.178-.355-.178h-.037c-.188,0-.346.235-.346.437v.079a.678.678,0,0,0,.55.665h.167c.106,0,.173-.075.255-.093a1.746,1.746,0,0,0,.453.616,1.342,1.342,0,0,0,.712.335h.012a.231.231,0,0,0,.217-.225v-.079c0-.243-.366-.5-.484-.678a1.63,1.63,0,0,1-.284-.872v-.211a3.254,3.254,0,0,1,.1-.439c.009.011.187.394.226.454a3.627,3.627,0,0,1,.221.461c.147.3.265.63.415.937s.286.6.463.9c.088.148.173.271.264.416.076.12.223.277.277.387a.963.963,0,0,0-.643.366,1.229,1.229,0,0,0-.291.721v.079a1.361,1.361,0,0,0,.484,1.022,1.8,1.8,0,0,0,1.052.435h.243a1.764,1.764,0,0,0,.858-.266,1.562,1.562,0,0,0,.548-.584,13.44,13.44,0,0,0,.489-1.8c.112-.3.189-.537.325-.817.125-.265.255-.5.383-.755.113-.225.272-.523.4-.733a2.516,2.516,0,0,0,.186-.378c.024-.055.139-.385.163-.4a1.715,1.715,0,0,1-.26,1.041c-.15.231-.521.468-.521.771v.027a.259.259,0,0,0,.244.225h.023a1.491,1.491,0,0,0,.7-.349,1.824,1.824,0,0,0,.439-.6c.083.018.183.1.321.1a.682.682,0,0,0,.653-.7c0-.229-.137-.489-.348-.489h-.038c-.163,0-.259.173-.4.173l.015-.411,0-.051a.475.475,0,0,0,.448-.427v-.066a.5.5,0,0,0-.4-.476h-.153c-.075,0-.106.04-.141.04-.05,0-.128-.2-.128-.292v-.012c0-.137.092-.332.217-.332.108,0,.238.231.282.317.209-.114.511-.221.511-.558a.652.652,0,0,0-.678-.66h-.026a.824.824,0,0,0-.617.261,1.26,1.26,0,0,0-.289.586c-.017-.01-.287-.482-.375-.58-.08-.082-.143-.16-.224-.245a2.818,2.818,0,0,1-.249-.22.7.7,0,0,0,.116-.32v-.158a.66.66,0,0,0-.138-.295c-.041-.044-.207-.187-.221-.208a.58.58,0,0,0-.183-.475.952.952,0,0,0-.175-.147c-.029-.021-.185-.106-.2-.117s-.07-.156-.114-.211a1.026,1.026,0,0,0-.167-.159,1.258,1.258,0,0,0-.433-.2v-.464c0-.322-.31-.477-.638-.477a.536.536,0,0,0-.565.477c-.007.07,0,.189,0,.264,0,.151.037.166-.074.189a1.607,1.607,0,0,0-.361.143.868.868,0,0,0-.279.242.675.675,0,0,0-.09.17c-.025.067-.083.081-.144.118a.683.683,0,0,0-.4.636.729.729,0,0,0-.41.608Zm8.921,23.726a2.562,2.562,0,0,1,1.79.285,2.36,2.36,0,0,1,.906,3.115c-.791,2.006-3.086,2.537-4.876,3.146a18.838,18.838,0,0,0-2.911,1.184,1.474,1.474,0,0,1-2.694,0,18.983,18.983,0,0,0-2.911-1.184c-1.789-.608-4.086-1.14-4.876-3.146a2.356,2.356,0,0,1,.9-3.115,2.559,2.559,0,0,1,1.789-.285,2.575,2.575,0,0,0-1.18,2.353c.5-.931,1.389-2.036,2.521-2.076a.979.979,0,0,1,.676.227,2.6,2.6,0,0,0-.694,2.64c.374-1.065,1.083-2.6,2.382-2.513a.682.682,0,0,1,.562.256c-.685.757-.985,2.9-.164,3.753-.035-1.448.625-3.678,1.477-3.938a.4.4,0,0,1,.536.176.527.527,0,0,1,.042.245,9.871,9.871,0,0,0-.219,2.754,11.454,11.454,0,0,0,.477,2.521,11.9,11.9,0,0,0,.524-2.483,9.952,9.952,0,0,0-.22-2.791.377.377,0,0,1,.043-.245.4.4,0,0,1,.536-.176c.851.261,1.511,2.49,1.475,3.938.823-.851.522-3-.163-3.753a.682.682,0,0,1,.561-.256c1.3-.086,2.009,1.447,2.384,2.513a2.6,2.6,0,0,0-.7-2.64.984.984,0,0,1,.676-.227c1.133.04,2.025,1.146,2.521,2.076a2.573,2.573,0,0,0-1.18-2.353Zm-6.439,9.678h0a9.049,9.049,0,0,1,3.543-2.139,19.052,19.052,0,0,0,4.821-2.008,5.353,5.353,0,0,0,1.068-1.069c2.275.467,3.665-.216,5.31-1.411,1.276-.926,2.624-1.988,4.291-1.988a3.469,3.469,0,0,0-1.09-3.066,3.5,3.5,0,0,0,2.074-1.078,6.986,6.986,0,0,1,2.139-1.7,5.257,5.257,0,0,0-5.612-3.451,12.264,12.264,0,0,0,.876-2.082c.6-1.643.993-3.339,1.632-4.966a7.3,7.3,0,0,1,2.128-2.909c-.3-1.332-2.353-2.465-3.94-2.465a6.826,6.826,0,0,0-1.476-2.248,15.8,15.8,0,0,1-1.58-2.519c-2.061,0-3.237-.807-4.826-.807a2.344,2.344,0,0,0-.98.146c-.15.067-.159.1-.215.075a2.52,2.52,0,0,1-.233-.213c-.21-.19-.416-.372-.622-.536-1.25-.988-2.587-1.861-4.06-2.824-.472-.308-.973-.57-1.445-.877a12.084,12.084,0,0,1-1.8-1.394h0a12.057,12.057,0,0,1-1.8,1.394c-.474.307-.974.569-1.446.877-1.47.963-2.807,1.836-4.058,2.824-.208.164-.41.346-.624.536a2.178,2.178,0,0,1-.231.213c-.058.022-.064-.008-.216-.075a2.335,2.335,0,0,0-.98-.146c-1.588,0-2.766.807-4.827.807a15.457,15.457,0,0,1-1.579,2.519,6.841,6.841,0,0,0-1.476,2.248c-1.587,0-3.639,1.133-3.94,2.465a7.316,7.316,0,0,1,2.13,2.909c.638,1.627,1.026,3.323,1.63,4.966a12.5,12.5,0,0,0,.876,2.082,5.256,5.256,0,0,0-5.612,3.451,6.986,6.986,0,0,1,2.139,1.7,3.511,3.511,0,0,0,2.074,1.078,3.469,3.469,0,0,0-1.09,3.066c1.669,0,3.015,1.063,4.291,1.988,1.646,1.2,3.034,1.878,5.31,1.411a5.333,5.333,0,0,0,1.069,1.069c1.465,1.057,3.172,1.395,4.82,2.008a9.046,9.046,0,0,1,3.543,2.139Zm0-39.662c.031.069.068.138.114.22,1.6,2.763,4.445,3.7,6.9,5.394,3.555,2.346,3.527,4.782,3.392,8.469a5.471,5.471,0,0,0,.108,1.629,1.19,1.19,0,0,0,.241-.678,5.5,5.5,0,0,1,.176-1.095,3.351,3.351,0,0,1,.469-.951c.856-1.316,3.035-1.533,4.252-1.26a15.576,15.576,0,0,0,3.35.66c.45-.009.647-.146.387.031a3.645,3.645,0,0,0-.682,1.02,12.687,12.687,0,0,0-.84,2.17c-.877,2.859-1.658,5.4-3.524,7.775a17.647,17.647,0,0,1-5.5,4.667,8.665,8.665,0,0,1-3.067,1.021l.143-.955c-.952.5-1.041,1.485-2.461,1.558a25.728,25.728,0,0,1-3.449.115h0a25.706,25.706,0,0,1-3.447-.115c-1.421-.072-1.51-1.057-2.463-1.558l.145.955a8.673,8.673,0,0,1-3.07-1.021,17.685,17.685,0,0,1-5.5-4.667c-1.865-2.372-2.646-4.916-3.524-7.775a12.567,12.567,0,0,0-.84-2.17,3.661,3.661,0,0,0-.681-1.02c-.26-.177-.065-.04.386-.031a15.549,15.549,0,0,0,3.349-.66c1.217-.273,3.4-.057,4.252,1.26a3.431,3.431,0,0,1,.47.951,5.5,5.5,0,0,1,.177,1.095,1.172,1.172,0,0,0,.238.678,5.44,5.44,0,0,0,.109-1.629c-.136-3.687-.163-6.123,3.389-8.469,2.455-1.693,5.3-2.631,6.9-5.394a2.105,2.105,0,0,0,.115-.22Zm-9.363,29.342a18.741,18.741,0,0,0-5.62.4,6.847,6.847,0,0,1,4.812-1.186c-1.137-.457-3.124-.325-5.093.025,1.233-1.134,3.351-.957,3.706-1.188-1.882-1.9-6.689.4-6.839,3,2.813.065,5.115,4.192,8.576,3.359a3.394,3.394,0,0,1,.551-3.521,4.612,4.612,0,0,0-3.331.881c.525-.94,1.114-1.524,3.239-1.771Zm-8.749-3.757c1.28-.482,3.708.14,4.368.227-1.161-.287-2.294-.989-3.484-1.271a13.371,13.371,0,0,0-1.848-.247,7.771,7.771,0,0,1,3.8,0,4.532,4.532,0,0,0-3.11-.873,2.459,2.459,0,0,1,1.982-.287,4.323,4.323,0,0,0,.9.177,3.425,3.425,0,0,0-.347-.292c-2.042-1.494-4.9.286-5.417,1.91a16.3,16.3,0,0,1,2.008,1.734,2.431,2.431,0,0,0,1.86.525,13.392,13.392,0,0,1,2.174-.864,6.554,6.554,0,0,0-2.892-.74Zm-.93-15.092a2.378,2.378,0,0,0-1.189,1.016c1.143.568,2.949-.208,4.165-.458a10.1,10.1,0,0,1,1.922-.24,8.132,8.132,0,0,0-1.771-.6,4.917,4.917,0,0,0-3.126.28Zm9.623-5.107c.218-.261.437-.5.641-.791-.369-.468-2.09.088-2.518.229a6.3,6.3,0,0,1-2.466.372c-.429.663-.714,1.2-1.142,1.764a9.381,9.381,0,0,0-1.218,1.631,1.979,1.979,0,0,0-.3.729,9.226,9.226,0,0,1,5.214,2.716,14.552,14.552,0,0,1,.5-4.208,7.156,7.156,0,0,1,1.3-2.441Zm.526.606a12.919,12.919,0,0,1,2.156-1.564c.38-.24.882-.52,1.434-.829,1.806-1.012,4.151-2.359,4.522-3.8-1.825.905-7.683,4.366-8.113,6.2Zm18.258,23.35a18.737,18.737,0,0,1,5.62.4,6.853,6.853,0,0,0-4.813-1.186c1.138-.457 3.125-.325 5.094.025-1.233-1.134-3.351-.957-3.7-1.188,1.881-1.9,6.686.4,6.837,3-2.812.065-5.114,4.192-8.574,3.359a3.4,3.4,0,0,0-.55-3.521,4.613,4.613,0,0,1,3.331.881c-.529-.94-1.115-1.524-3.24-1.771Zm8.747-3.757c-1.278-.482-3.706.14-4.367.227,1.161-.287,2.3-.989,3.485-1.271a13.34,13.44,0,0,1,1.847-.247,7.781,7.781,0,0,0-3.807,0,4.547,4.547,0,0,1,3.112-.873,2.459,2.459,0,0,0-1.982-.287,4.312,4.312,0,0,1-.9.177,3.035,3.035,0,0,1,.346-.292c2.041-1.494,4.9.286,5.415,1.91a16.07,16.07,0,0,0-2.006,1.734,2.436,2.436,0,0,1-1.861.525,13.409,13.409,0,0,0-2.174-.864,6.549,6.549,0,0,1,2.89-.74Zm.931-15.092a2.384,2.384,0,0,1,1.191,1.016c-1.146.568-2.95-.208-4.167-.458a10.105,10.105,0,0,0-1.923-.24,8.148,8.148,0,0,1,1.772-.6,4.915,4.915,0,0,1,3.125.28Zm-9.624-5.107c-.215-.261-.436-.5-.641-.791.37-.468,2.093.088,2.518.229a6.3,6.3,0,0,0,2.467.372c.429.663.715,1.2,1.142,1.764a9.539,9.539,0,0,1,1.219,1.631,1.987,1.987,0,0,1,.3.729,9.235,9.235,0,0,0-5.216,2.716,14.519,14.519,0,0,0-.5-4.208,7.166,7.166,0,0,0-1.3-2.441Zm-.524.606a13,13,0,0,0-2.156-1.564c-.38-.24-.883-.52-1.436-.829-1.806-1.012-4.149-2.359-4.521-3.8,1.825.905,7.682,4.366,8.113,6.2Zm-11.393,17.49.723.889-3.125,2.265,2.4-3.153Zm5.2-1.386,1.455,2.013,1.4,1.923-3.617-1.377-.541,2.41-1.655-1.892-1.536-1.892.135-.479,4.362-.706Zm-10.678-2.419c.543-.126,7.5-1.035,8.051-1.129l-.915,1.407-6.334.838a1.226,1.226,0,0,1-.461.018c-.726-.113-1.234-.919-.34-1.134Zm17.349-1.913c.347.279.511.75-.153.865l-3.68.53.876-1.316,1.938-.214c.395-.062.674-.147,1.02.135Zm-10.827,4.354,2.427-3.627,4.623-.734-2.521,3.58-4.529.781Zm.5-5.365.941,1.124-4.779.6-.6-1.077,4.437-.645Zm.621,9.446,1.544,1.8.683-.2.5-2.247,3.536,1.395.771-.4-3.253-4.5.545-.742,3.584-.446a3.938,3.938,0,0,0,2.252-.992,1.933,1.933,0,0,0,.5-2.105,1.655,1.655,0,0,0-1.8-.809c-.351.063-1.707.3-1.979.326l-.609-.412-5.205.854-1.4-1.64-5.1.689-.437.64.635,1.211-3.467.436c-.241.4-1.183,1.7-1.121,2.387a2.037,2.037,0,0,0,1.175,1.483l5.554-.7.411.658c-.494.639-2.587,3.5-2.947,4.067l.617.432.661-.015,2.586-1.79-.22.705.454.443,1.537-.531Zm21.522,7.155-.746-.193-1.351,1.533,0,0-1.471,1.352-.023-.013-1.953,1.445-1.611.986-1.849,1,.636.444.367-.2.344.682a1.338,1.338,0,0,0,.526.553,2,2,0,0,0,.9.2l-.618,1.122.615.285,1.044-1.9.382.668.924.051-1.732-3.036.744-.458-.029-.019,2-1.48-.012-.008.305-.281.317.369-2.186,1.642.158.383a1.614,1.614,0,0,1,.877-.191.479.479,0,0,1,.361.753.448.448,0,0,0-.565.2.471.471,0,0,0,.367.7.69.69,0,0,0,.572-.187l1.026.264.081-.421-.792-.206a1.592,1.592,0,0,0,.138-.354.7.7,0,0,0-.243-.861,1.241,1.241,0,0,0-.6-.228l1.266-.96,1.15,1.341.914-.137-2.26-2.637.648-.594-.035-.012.307-.352,2.137,2.022.9-.229-2.516-2.379.586-.661Zm-5.529,6.7c-.123.276-.39.743-.787.748-.281,0-.527-.524-.527-.524l-.475-.938,1.045-.563-.03-.02.021-.018.752,1.315Zm-33.833-4.3-3.466-3.727-.233.757,1.478,1.589-.621.621a1.457,1.457,0,0,0-.1-.783.938.938,0,0,0-1.51-.364,1.307,1.307,0,0,0-.022,1.829,1.034,1.034,0,0,0,.655.293l-.486.484.159.937,1.193-1.191a2.9,2.9,0,0,1,.662.1c.49.146.482.362-.177.687a2.6,2.6,0,0,1-.764.213l.115.76a2.173,2.173,0,0,0,1.025-.4c.394-.3.793-1.266.275-1.781a1.023,1.023,0,0,0-.484-.227l.61-.608,1.076,1.157-.005.034.164.136.294.315-.737.939-.123-.1a.236.236,0,0,0-.365.057,2.145,2.145,0,0,0,.05,1.332c.232.271.454-.055.454-.055l.145-.184,1.111.9-.555.886.365.879,1.858-2.956.727.49,0-.041.029.016-1.493,2.569.4.865,1.759-3.02.722.452.005.054.471.186-.5,1.346a1.521,1.521,0,0,0,.5,1.26c.482.469,1.178.6,1.532-.356l.531-1.425.729.288.022.115.48.154-.853,2.862.586.742,1-3.37.829.264-.15-.776-1.861-.594-.015-.129-1.693-.673.166-.285a3.2,3.2,0,0,0-.289-1.448,1.57,1.57,0,0,0-1.538-1.025c-.981.153-.936,1.382-.936,1.382l-.793-.5v.008l-.521-.354a1.47,1.47,0,0,1,.089-.6.539.539,0,0,1,.8-.316.622.622,0,0,1,.239.252l.15-.049a1.056,1.056,0,0,0-.244-.607.659.659,0,0,0-1.19.238,2.833,2.833,0,0,0-.1.914l-.057-.038.006-.049-1.578-1.326Zm-3.2-.4a1.127,1.127,0,0,1-.686-.075c-.314-.122-.69-.423-.558-.7a.737.737,0,0,1,1.174.036.992.992,0,0,1,.07.74Zm3.942,3.524-1.053-.853.77-.979.519.435,0,.081.42.281-.652,1.035Zm3.491.058,0-.1-.779-.489s.252-.687.778-.795a1.179,1.179,0,0,1,1.141.557,2.5,2.5,0,0,1,.395,1.447l-1.538-.615Zm1.22,2.97s-.263.406-.6.132a.313.313,0,0,1-.088-.339l.584-1.567.661.265-.561,1.51Zm8.641.908-.01-.029.982.125s.321.4-.132.543c-.195.057-.381.1-.528.128a3.106,3.106,0,0,0-1.035-.583,1.067,1.067,0,0,0-1.4.858,1.377,1.377,0,0,0,.915,1.47c.634.186,1.47-.462,1.47-.462l.028-.105.013.024c.562,1.112,2.009.552,2.145.5l-.041.8.743.569.176-3.521.642.035.051.08,3.262-.3-.017-.023.669-.084s.4.3,0,.561c-.1.056-.2.111-.285.159l-1.953.162c-.1.01-.177.132-.054.282.214.254.589.688.425,1.006-.082.168-.489.374-.892-.06a3.112,3.112,0,0,1-.541-.927l-.316.17a4.51,4.51,0,0,0,.711,1.193,1.129,1.129,0,0,0,1.316.458.77.77,0,0,0,.323-1.113,1.278,1.278,0,0,0-.283-.354l1.008-.078a2.58,2.58,0,0,0,.324.525c.762.888,1.955.128,2.181-.026l.162.715.867.335-.77-3.436.656-.156.061.055,2.333-.879.256.565-1.442.589a.833.833,0,0,0-.466,1.03,1.355,1.355,0,0,0,.582.712l.935.74.262-.356-.762-.593a.653.653,0,0,1-.3-.489.462.462,0,0,1,.286-.5l1.2-.493.633,1.4.916.142-1.443-3.2.787-.377-.616-.476-.853.412-.3-.269a3.932,3.932,0,0,0-1.085-.793.906.906,0,0,0-.86.1l.477.614a.692.692,0,0,1,.464-.115,1.381,1.381,0,0,1,.656.286l.378.3-.812.392.028.023-1.563.592-.062-.075-1.723.414-2.236.285-2.628.24-.043-.094-1.73-.1-.008-.02-2.429-.3-2.353-.477.23.76,2.43.485Zm.137,1.5a3.678,3.678,0,0,1-.828.318c-.334.078-.936,0-1.035-.264-.107-.3.273-.665.756-.689a2.578,2.578,0,0,1,1.02.17,4.39,4.39,0,0,0,.088.465Zm2.354.052a2.447,2.447,0,0,1-1.294.433c-.668-.032-.653-.528-.653-.528s.772-.116.961-.458a1.025,1.025,0,0,0-.1-.848l.637.077.009.024.3.017.061.007v0l.147.007-.063,1.273Zm7.209-.432a2.475,2.475,0,0,1-1.112.689c-.654.135-.757-.35-.757-.35s.723-.306.826-.686-.3-.8-.3-.8l1.006-.129-.033-.047.067-.019.3,1.338Zm3.462-2.6-.007,0h0l0,0Zm-29.2-33.913-2.586-2.167.411-.525,2.585.35-1.726-1.446.392-.5,2.584,2.167-.423.543-2.531-.335,1.686,1.413-.392.5Zm2.107-2.653-2.395-2.393.467-.5,2.394,2.394-.466.5Zm1.56-1.562-3.049-1.848.557-.485,2.228,1.393-.959-2.494.546-.476,1.228,3.433-.55.478Zm1.679-1.529-1.909-2.821,2.02-1.464.322.477-1.471,1.066.424.625,1.366-.99.324.474-1.371.992.521.768,1.521-1.1.323.475-2.072,1.5Zm2.567-1.835-1.51-3.068,1.259-.666a2.373,2.373,0,0,1,.731-.28.748.748,0,0,1,.491.111.985.985,0,0,1,.366.416.944.944,0,0,1,.084.675,1.073,1.073,0,0,1-.447.592,1.525,1.525,0,0,1,.448.088,3.975,3.975,0,0,1,.587.318l.656.409-.716.375-.761-.438a4.742,4.742,0,0,0-.538-.284.516.516,0,0,0-.242-.033,1.072,1.072,0,0,0-.32.126l-.121.063.63,1.28-.6.316Zm-.272-2.087.441-.233a2.621,2.621,0,0,0,.521-.321.375.375,0,0,0,.1-.219.466.466,0,0,0-.05-.262.4.4,0,0,0-.2-.207.394.394,0,0,0-.286,0c-.051.018-.2.094-.441.22l-.467.247.384.778Zm2.722-.4.588-.306a.789.789,0,0,0,.4.378.689.689,0,0,0,.509-.031.75.75,0,0,0,.407-.314.439.439,0,0,0,.039-.369.315.315,0,0,0-.138-.17.529.529,0,0,0-.276-.049c-.085,0-.268.022-.555.058a1.748,1.748,0,0,1-.824-.036.886.886,0,0,1-.527-.533.924.924,0,0,1-.036-.514.945.945,0,0,1,.268-.478,1.657,1.657,0,0,1,.569-.355,1.37,1.37,0,0,1,.979-.086,1,1,0,0,1,.574.586l-.616.276a.578.578,0,0,0-.305-.285.66.66,0,0,0-.437.048.773.773,0,0,0-.386.286.267.267,0,0,0,.141.4,1.732,1.732,0,0,0,.656-.015,3.091,3.091,0,0,1,.761-.038.928.928,0,0,1,.466.19,1.112,1.112,0,0,1,.357,1.038,1.013,1.013,0,0,1-.286.527,1.863,1.863,0,0,1-.634.385,1.387,1.387,0,0,1-1.008.078,1.292,1.292,0,0,1-.682-.67Zm3.452-.084-.86-3.327.648-.18.861,3.328-.649.179Zm2.008-.5-.479-2.818-.972.18-.1-.576,2.6-.475.1.572-.968.18.479,2.816-.663.121Zm2.933-.423-.1-1.446-1.352-1.9.787-.058.873,1.3.674-1.415.771-.055-1.086,2.083.1,1.441-.667.047Zm3.5-1.814a2.2,2.2,0,0,1,.256-.858,1.577,1.577,0,0,1,.363-.429,1.271,1.271,0,0,1,.46-.253,1.742,1.742,0,0,1,.731-.046,1.541,1.541,0,0,1,1.11.617,2.159,2.159,0,0,1-.3,2.6,1.507,1.507,0,0,1-1.218.318,1.555,1.555,0,0,1-1.117-.612,1.829,1.829,0,0,1-.283-1.337Zm.692.063a1.328,1.328,0,0,0,.15.913.863.863,0,0,0,.625.384.821.821,0,0,0,.69-.216,1.683,1.683,0,0,0,.216-1.766.911.911,0,0,0-1.327-.166,1.32,1.32,0,0,0-.354.851Zm2.857,2.153.691-3.368,2.234.491-.118.568-1.574-.345-.163.8,1.358.3-.118.57-1.359-.3-.292,1.434-.659-.146Zm3.975,1.132,1.352-3.147.615.283-.6,1.4,1.841-.824.824.379-1.67.7.38,2.477-.794-.367-.2-1.861-.726.3-.41.952-.612-.283Zm3.056,1.467,1.612-3.013,2.157,1.237-.273.511-1.569-.9-.359.668,1.461.838-.27.509-1.461-.839-.44.819,1.625.932-.272.51-2.212-1.271Zm2.653,1.634,2.048-2.713,1.115.9a2.494,2.494,0,0,1,.557.568.822.822,0,0,1,.107.506,1.026,1.026,0,0,1-.207.52.889.889,0,0,1-.555.364,1.026,1.026,0,0,1-.708-.169,1.674,1.674,0,0,1,.113.458,3.924,3.924,0,0,1-.034.684l-.076.79-.636-.514.064-.9a5.129,5.129,0,0,0,.021-.624.524.524,0,0,0-.074-.24,1.12,1.12,0,0,0-.245-.248l-.106-.085-.854,1.133-.53-.43Zm1.712-1.137.392.316a2.7,2.7,0,0,0,.5.352.345.345,0,0,0,.236,0,.448.448,0,0,0,.206-.159.44.44,0,0,0,.1-.278.431.431,0,0,0-.119-.268c-.038-.042-.166-.148-.38-.322l-.414-.336-.518.69Zm3,5.524-.508-.546.342-.759-.924-.991-.735.34-.494-.53,3.292-1.427.5.527-1.469,3.386Zm.088-1.869.568-1.229-1.2.554.633.675Zm.1,2.22,2.564-2.15.422.54-2.128,1.785,1.051,1.343-.435.364-1.474-1.882Zm3.216,4.968-.367-.655.509-.652-.664-1.193-.792.146-.355-.638,3.529-.562.354.639-2.214,2.916Zm.521-1.791.839-1.051-1.295.237.456.813Z" transform="translate(-5252.01 -6811.358)" fill="#D4AF37" fill-rule="evenodd" />
+      </svg>
+    </div>
+    <div class="logo-text" style="margin-left: 8px;">
+      <h1>Kerala University FYUGP Internship Report Generator</h1>
+      <span>Offline RAG Template Engine</span>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn-secondary" onclick="resetForm()">Clear Caches</button>
+  </div>
+</header>
+
+<div class="workspace">
+  <!-- Center Main Editor Flow -->
+  <div class="editor-flow">
+    
+    <!-- Tab Controls -->
+    <div class="flow-tabs">
+      <button class="flow-tab-btn active" id="btn-flow-inputs" onclick="switchMainTab('inputs')">1. Report Details</button>
+      <button class="flow-tab-btn" id="btn-flow-logs-tab" onclick="switchMainTab('logs-tab')">2. Daily Activity Logs</button>
+      <button class="flow-tab-btn" id="btn-flow-custom-chapters" onclick="switchMainTab('custom-chapters')">3. Customize Chapters</button>
+    </div>
+
+    <!-- TAB 1: Inputs Area -->
+    <div class="editor-container active" id="flow-inputs">
+      
+      <!-- Student Info Card -->
+      <div class="card">
+        <div class="card-title">Student Information</div>
+        <div class="field-grid">
+          <div class="field">
+            <label for="studentName">Student Name</label>
+            <input type="text" id="studentName" oninput="updateUI()" placeholder="e.g. Alan Thomas" />
+          </div>
+          <div class="field">
+            <label for="registerNumber">Register Number</label>
+            <input type="text" id="registerNumber" oninput="updateUI()" placeholder="e.g. 4537" />
+          </div>
+          <div class="field">
+            <label for="apaarId">APAAR ID</label>
+            <input type="text" id="apaarId" oninput="updateUI()" placeholder="e.g. 216786261499" />
+          </div>
+          <div class="field">
+            <label for="course">Course Name / Degree</label>
+            <input type="text" id="course" oninput="updateUI()" placeholder="e.g. Bachelor of Science in Computer Science" />
+          </div>
+          <div class="field">
+            <label for="courseCode">Course Code</label>
+            <input type="text" id="courseCode" oninput="updateUI()" placeholder="e.g. UK4INTCSC200" />
+          </div>
+          <div class="field">
+            <label for="semester">Semester</label>
+            <input type="text" id="semester" oninput="updateUI()" placeholder="e.g. 4th Semester" />
+          </div>
+          <div class="field">
+            <label for="academicYear">Academic Year</label>
+            <input type="text" id="academicYear" oninput="updateUI()" placeholder="e.g. 2025–2026" />
+          </div>
+          <div class="field">
+            <label for="collegeName">College Name</label>
+            <input type="text" id="collegeName" oninput="updateUI()" placeholder="e.g. Naipunnya School of Management" />
+          </div>
+          <div class="field">
+            <label for="department">Department Name</label>
+            <input type="text" id="department" oninput="updateUI()" placeholder="e.g. Department of Computer Science & Applications" />
+          </div>
+          <div class="field">
+            <label for="collegeLocation">College Address / Location</label>
+            <input type="text" id="collegeLocation" oninput="updateUI()" placeholder="e.g. Cherthala, Alappuzha, Kerala" />
+          </div>
+          <div class="field span-2">
+            <label for="universityName">University Name</label>
+            <input type="text" id="universityName" oninput="updateUI()" placeholder="e.g. University of Kerala" />
+          </div>
+          <div class="field">
+            <label for="hodName">HOD Name</label>
+            <input type="text" id="hodName" oninput="updateUI()" placeholder="e.g. Mr. VINOD CHANDRAN" />
+          </div>
+          <div class="field">
+            <label for="principalName">Principal Name</label>
+            <input type="text" id="principalName" oninput="updateUI()" placeholder="e.g. Rev. Fr. Dr. BENNY JOHN MARAMPARAMPIL" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Internship Info Card -->
+      <div class="card">
+        <div class="card-title">Campuses & Organization Information</div>
+        <div class="field-grid">
+          <div class="field">
+            <label for="companyName">Company Name</label>
+            <input type="text" id="companyName" oninput="updateUI()" placeholder="e.g. Logiccraft Software Solutions" />
+          </div>
+          <div class="field">
+            <label for="companyAddress">Company Address</label>
+            <input type="text" id="companyAddress" oninput="updateUI()" placeholder="e.g. Cherthala, Alappuzha, Kerala" />
+          </div>
+          <div class="field">
+            <label for="internshipDuration">Internship Duration</label>
+            <input type="text" id="internshipDuration" oninput="updateUI()" placeholder="e.g. 26-day Internship" />
+          </div>
+          <div class="field">
+            <label for="startDate">Start Date</label>
+            <input type="date" id="startDate" oninput="updateUI()" />
+          </div>
+          <div class="field">
+            <label for="endDate">End Date</label>
+            <input type="date" id="endDate" oninput="updateUI()" />
+          </div>
+          <div class="field">
+            <label for="internshipDomain">Internship Domain</label>
+            <input type="text" id="internshipDomain" oninput="updateUI()" placeholder="e.g. AI with Cybersecurity" />
+          </div>
+          <div class="field">
+            <label for="internshipTopic">Internship Topic / Key Subject</label>
+            <input type="text" id="internshipTopic" oninput="updateUI()" placeholder="e.g. Machine Learning-based Intrusion Detection" />
+          </div>
+          <div class="field">
+            <label for="mentorName">Mentor Name</label>
+            <input type="text" id="mentorName" oninput="updateUI()" placeholder="e.g. Mr. Rahul Dev" />
+          </div>
+          <div class="field">
+            <label for="facultyGuideName">Faculty Guide Name</label>
+            <input type="text" id="facultyGuideName" oninput="updateUI()" placeholder="e.g. Ms. Gayathri A." />
+          </div>
+          <div class="field">
+            <label for="facultyGuideDesignation">Faculty Guide Designation</label>
+            <input type="text" id="facultyGuideDesignation" oninput="updateUI()" placeholder="e.g. Assistant Professor" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Project Info Card -->
+      <div class="card">
+        <div class="card-title">
+          Project Details
+          <label class="checkbox-field">
+            <input type="checkbox" id="noProject" onchange="toggleProjectFields()" />
+            I did not complete a project during my internship
+          </label>
+        </div>
+        
+        <div id="projectFields">
+          <div class="field-grid">
+            <div class="field span-2">
+              <label for="projectTitle">Project Title</label>
+              <input type="text" id="projectTitle" oninput="updateUI()" placeholder="e.g. Machine Learning-Based Intrusion Detection System" />
+            </div>
+            <div class="field span-2">
+              <label for="problemStatement">Problem Statement</label>
+              <textarea id="problemStatement" rows="2" oninput="updateUI()" placeholder="Describe the problem your project solves..."></textarea>
+            </div>
+            <div class="field span-2">
+              <label for="projectObjective">Project Objective</label>
+              <textarea id="projectObjective" rows="2" oninput="updateUI()" placeholder="Describe the objectives of the project..."></textarea>
+            </div>
+            <div class="field span-2">
+              <label for="projectDescription">Project Description</label>
+              <textarea id="projectDescription" rows="3" oninput="updateUI()" placeholder="Brief description of the system architecture and code..."></textarea>
+            </div>
+            <div class="field">
+              <label for="technologiesUsed">Technologies Used</label>
+              <input type="text" id="technologiesUsed" oninput="updateUI()" placeholder="e.g. TensorFlow, Keras, SQLite" />
+            </div>
+            <div class="field">
+              <label for="programmingLanguages">Programming Languages</label>
+              <input type="text" id="programmingLanguages" oninput="updateUI()" placeholder="e.g. Python 3.12" />
+            </div>
+            <div class="field">
+              <label for="toolsUsed">Tools Used</label>
+              <input type="text" id="toolsUsed" oninput="updateUI()" placeholder="e.g. Wireshark, VS Code, Git" />
+            </div>
+            <div class="field">
+              <label for="datasetUsed">Dataset Used</label>
+              <input type="text" id="datasetUsed" oninput="updateUI()" placeholder="e.g. NSL-KDD, UNSW-NB15" />
+            </div>
+            <div class="field span-2">
+              <label for="methodology">Methodology</label>
+              <textarea id="methodology" rows="2" oninput="updateUI()" placeholder="e.g. Data Preprocessing, feature selection, SMOTE class balancing, CNN/LSTM training..."></textarea>
+            </div>
+          </div>
+        </div>
+        <div id="noProjectPlaceholder" style="display:none; color:var(--text-secondary); font-size:0.88rem; padding:0.5rem 0;">
+          You have specified that no specific project was assigned. The generator will automatically construct a comprehensive **Technical Skills & Concept Acquired** chapter detailing practical workshops, network labs (Wireshark/DNS), and scripts built.
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Daily Log Area -->
+    <div class="editor-container" id="flow-logs-tab">
+      <div class="card">
+        <div class="card-title">
+          Daily Activity Logs
+          <button class="btn-ai-autofill" id="resetLogsBtn" onclick="resetDailyLogsToDefault()">
+            <span>↺ Reset to Domain Defaults</span>
+          </button>
+        </div>
+        <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:1rem; line-height:1.4;">
+          The table below displays the structured daily activity log for the selected domain. You can edit the task titles and detailed activities for each day directly before generating the report.
+        </p>
+        <div style="overflow-x:auto;">
+          <table class="daily-log-grid">
+            <thead>
+              <tr>
+                <th style="width:70px; text-align:center;">Day</th>
+                <th style="width:250px;">Task Title</th>
+                <th>Key Activities and Analysis (2-3 Sentences)</th>
+                <th style="width:80px; text-align:center;">Hours</th>
+              </tr>
+            </thead>
+            <tbody id="dailyLogTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Custom Chapters Area -->
+    <div class="editor-container" id="flow-custom-chapters">
+      <div class="card">
+        <div class="card-title">
+          Customize Chapter Sections
+          <button class="btn-ai-autofill" id="resetChaptersBtn" onclick="resetCustomChaptersToDefault()">
+            <span>↺ Reset to Domain Defaults</span>
+          </button>
+        </div>
+        <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:1rem; line-height:1.4;">
+          Review and customize the template text and bullet points for each chapter. Your edits are saved locally and will be compiled into the final report document. Placeholders like <code>{studentName}</code>, <code>{companyName}</code>, etc., will be dynamically replaced.
+        </p>
+        <div class="field" style="margin-bottom:1.5rem;">
+          <label for="customChapterSelect">Select Chapter to Customize</label>
+          <select id="customChapterSelect" onchange="renderCustomChapterEditor()">
+            <option value="ch1">Chapter 1 – Introduction</option>
+            <option value="ch2">Chapter 2 – Organization Profile</option>
+            <option value="ch3">Chapter 3 – Internship Activities</option>
+            <option value="ch4" id="opt-custom-ch4">Chapter 4 – Project Work / Technical Learning</option>
+            <option value="ch5">Chapter 5 – Findings and Learning Outcomes</option>
+            <option value="ch6">Chapter 6 – Conclusion</option>
+            <option value="references">References</option>
+          </select>
+        </div>
+        <div id="customChapterSectionsEditor" style="display:flex; flex-direction:column; gap:1.5rem;">
+          <!-- Dynamically populated sections -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right Sidebar Configuration Panel -->
+  <div class="sidebar-config">
+    <div class="tabs-config">
+      <button class="tab-config-btn active" id="btn-config-settings" onclick="switchConfigTab('settings')">Settings</button>
+      <button class="tab-config-btn" id="btn-config-preview" onclick="switchConfigTab('preview')">Preview</button>
+      <button class="tab-config-btn" id="btn-config-logs" onclick="switchConfigTab('logs')">Console Log</button>
+    </div>
+
+    <!-- Settings Tab Panel -->
+    <div class="panel-config active" id="tab-settings">
+      <div class="sidebar-title">Domain Configuration</div>
+      
+      <div class="field">
+        <label for="domainSelect">Select Internship Domain</label>
+        <select id="domainSelect" onchange="onDomainChanged()"></select>
+      </div>
+
+      <div class="field">
+        <label for="importDomainInput" style="cursor: pointer; display: inline-block; padding: 6px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; font-size: 0.8rem; font-weight: 500; text-align: center; width: 100%;">
+          📁 Import Domain RAG JSON
+        </label>
+        <input type="file" id="importDomainInput" style="display: none;" accept=".json" onchange="handleDomainImport(event)" />
+      </div>
+
+      <div class="field">
+        <label for="importPDFInput" style="cursor: pointer; display: inline-block; padding: 6px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; font-size: 0.8rem; font-weight: 500; text-align: center; width: 100%; color: #818cf8; border-color: #6366f1;">
+          📄 Upload Reference PDF to Parse RAG
+        </label>
+        <input type="file" id="importPDFInput" style="display: none;" accept=".pdf" onchange="handlePDFImport(event)" />
+      </div>
+
+      <div class="sidebar-title">Report Layout Parameters</div>
+
+      <div class="field">
+        <label for="numDays">Number of Internship Days</label>
+        <input type="number" id="numDays" min="5" max="60" onchange="onNumDaysChanged()" />
+      </div>
+
+      <div class="field">
+        <label for="totalPages">Total Target Pages</label>
+        <input type="number" id="totalPages" min="20" max="65" oninput="updateUI()" />
+      </div>
+
+      <div class="budget-visualizer">
+        <label>Allocated Page Budget:</label>
+        <div class="budget-bar" id="budgetBar">
+          <!-- segments injected dynamically -->
+        </div>
+        <div class="budget-legend" id="budgetLegend">
+          <!-- legend items injected dynamically -->
+        </div>
+      </div>
+
+      <button class="btn-generate" id="generateBtn" onclick="assembleReportDocx()">
+        <span>⬇ Compile Final .docx Report</span>
+      </button>
+    </div>
+
+    <!-- Preview Tab Panel -->
+    <div class="panel-config" id="tab-preview">
+      <div class="sidebar-title">Document Preview</div>
+      <div class="preview-canvas-wrapper">
+        <!-- Cover Preview -->
+        <div class="preview-card" id="previewCard">
+          <div class="preview-header">
+            <h2 id="prev-collegeName">COLLEGE NAME HERE</h2>
+            <div style="font-size:0.4rem; color:#666;" id="prev-collegeLocation">College Location</div>
+            <div style="font-size:0.4rem; color:#666; margin-top:2px;" id="prev-universityName">Affiliated to University Name</div>
+          </div>
+          
+          <div style="text-align:center; font-weight:bold; font-size:0.5rem; color:#1f3864; margin-top:1.5rem;">
+            SUMMER INTERNSHIP REPORT
+          </div>
+          <div style="text-align:center; font-size:0.4rem; margin-top:1px;">ON</div>
+          <div style="text-align:center; font-weight:bold; font-size:0.6rem; color:#1f3864; margin-top:2px; text-transform:uppercase;" id="prev-domain">
+            INTERNSHIP DOMAIN
+          </div>
+          <div style="text-align:center; font-size:0.4rem; margin-top:1px;">AT</div>
+          <div style="text-align:center; font-weight:bold; font-size:0.55rem; color:#1f3864; margin-top:2px;" id="prev-companyName">
+            COMPANY NAME
+          </div>
+
+          <div style="margin-top:1.5rem; font-size:0.42rem; text-align:center; line-height:1.3; padding:0 1rem;">
+            Report Submitted to the <span id="prev-universityNameSub">University</span> in partial fulfillment of the requirements for the award of the degree of
+            <div style="font-weight:bold; font-size:0.45rem; margin-top:2px;" id="prev-course">Bachelor of Science in Computer Science</div>
+          </div>
+
+          <div style="margin-top:1.2rem;">
+            <div class="preview-section-title">Submitted By:</div>
+            <div class="preview-meta-row"><div class="preview-meta-label">Student Name</div><div>:</div><div id="prev-studentName">Name</div></div>
+            <div class="preview-meta-row"><div class="preview-meta-label">Register Number</div><div>:</div><div id="prev-registerNumber">Register No.</div></div>
+            <div class="preview-meta-row"><div class="preview-meta-label">APAAR ID</div><div>:</div><div id="prev-apaarId">APAAR ID</div></div>
+          </div>
+
+          <div style="margin-top:0.8rem;">
+            <div class="preview-section-title">Under the guidance of:</div>
+            <div class="preview-meta-row"><div class="preview-meta-label">Faculty Guide</div><div>:</div><div id="prev-guideName">Faculty Guide Name</div></div>
+          </div>
+
+          <div style="position:absolute; bottom:1.2rem; left:0; right:0; text-align:center; border-top:0.5px solid #ddd; padding-top:0.4rem; font-size:0.4rem; color:#777;">
+            <span id="prev-department">Department Name</span> • <span id="prev-year">2026</span>
+          </div>
+        </div>
+
+        <!-- Text Preview of chapters -->
+        <div class="text-preview-container" id="textPreviewBox" style="display:none;">
+          <div class="text-preview-header" id="textPreviewTitle">Chapter Preview</div>
+          <div id="textPreviewBody" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logs Tab Panel -->
+    <div class="panel-config" id="tab-logs">
+      <div class="sidebar-title">Execution Console</div>
+      <div class="log-card" id="logCard">
+        <div class="log-line">
+          <span class="log-time">[00:00:00]</span>
+          <span>Console initialized. Ready.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Confirmation Modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-card">
+    <div class="modal-icon">⚠️</div>
+    <div class="modal-title">Clear All Caches?</div>
+    <div class="modal-message">This will reset all student details, customized chapters, references, and daily activity logs to default values. Your locally stored edits will be lost.</div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="closeConfirmModal()">Cancel</button>
+      <button class="modal-btn modal-btn-confirm" onclick="executeResetForm()">Yes, Clear Cache</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <span id="toastText">Toast message</span>
+</div>
+
+<script>
+  const defaultDomainData = {
+    "domainName": "AI with Cybersecurity",
+    "metadata": {
+      "internshipDomain": "AI with Cybersecurity",
+      "internshipTopic": "AI with Cybersecurity Defensive Engineering",
+      "companyName": "{companyName}",
+      "companyAddress": "{companyAddress}",
+      "internshipDuration": "{internshipDuration}",
+      "mentorName": "{mentorName}",
+      "projectTitle": "{projectTitle}",
+      "problemStatement": "{problemStatement}",
+      "projectObjective": "{projectObjective}",
+      "projectDescription": "{projectDescription}",
+      "technologiesUsed": "{technologiesUsed}",
+      "programmingLanguages": "{programmingLanguages}",
+      "toolsUsed": "{toolsUsed}",
+      "datasetUsed": "{datasetUsed}",
+      "methodology": "{methodology}",
+      "numDays": 26
+    },
+    "certBullets": [
+      "Hands-on exposure to {internshipDomain} methodologies and core development frameworks.",
+      "Configuration and testing of software modules using {programmingLanguages} and {toolsUsed}.",
+      "Implementation of technical workflows related to {internshipTopic} under professional mentorship.",
+      "Participation in project lifecycle stages, including dataset review and unit testing procedures.",
+      "Collaboration with the engineering team to deploy prototype configurations and document outcomes."
+    ],
+    "dailyActivities": [
+      {
+        "day": 1,
+        "title": "Cybersecurity Fundamentals",
+        "activity": "Analyzed the CIA Triad (Confidentiality, Integrity, Availability) and its application in enterprise risk evaluation and security policy design. Studied modern threat vectors, adversarial motives, and security mitigation strategies."
+      },
+      {
+        "day": 2,
+        "title": "Vulnerability Assessment",
+        "activity": "Explored corporate attack surfaces and threat vectors. Studied the Common Vulnerability Scoring System (CVSS) framework to calculate severity and formulate structured remediation strategies."
+      },
+      {
+        "day": 3,
+        "title": "OWASP Top 10 Analysis",
+        "activity": "Reviewed the ten most critical web application security risks. Conducted hands-on sandboxed labs focusing on SQL Injection, Cross-Site Scripting (XSS), and insecure deserialization attacks."
+      },
+      {
+        "day": 4,
+        "title": "Networking Fundamentals",
+        "activity": "Analyzed the TCP/IP and OSI model architectures. Evaluated header structures, handshake protocols, and the specific security configurations required at each network layer."
+      },
+      {
+        "day": 5,
+        "title": "IP Addressing & Subnetting",
+        "activity": "Practiced network segmentation using CIDR notation. Analyzed how custom subnetting minimizes broadcast domains, restricts lateral movement, and reduces the network attack surface."
+      },
+      {
+        "day": 6,
+        "title": "DNS & Domain Architecture",
+        "activity": "Audited DNS resolver protocols, query workflows, and zone transfers. Investigated DNS cache poisoning, spoofing, and standard defensive configurations like DNSSEC."
+      },
+      {
+        "day": 7,
+        "title": "HTTP/S & TLS Security",
+        "activity": "Explored transport-layer encryption configurations. Analyzed the TLS 1.3 cryptographic handshake mechanism, session key exchange, and X.509 certificate validation rules."
+      },
+      {
+        "day": 8,
+        "title": "DNS Enumeration Reconnaissance",
+        "activity": "Conducted active and passive network reconnaissance within local sandboxes. Utilized Nslookup, Dig, and Traceroute to map domain infrastructure and document diagnostic records."
+      },
+      {
+        "day": 9,
+        "title": "Python Scripting Refresher",
+        "activity": "Revised Python programming structures, focus on file I/O operations, error logs parsing, exception handling, and custom libraries implementation for security tasks."
+      },
+      {
+        "day": 10,
+        "title": "Security Automation Scripts",
+        "activity": "Developed custom Python automation scripts to calculate SHA-256 hashes of system binaries, validating file integrity against baseline manifests to detect unauthorized changes."
+      },
+      {
+        "day": 11,
+        "title": "Log Auditing & Regular Expressions",
+        "activity": "Implemented Regular Expression patterns in Python scripts to audit system auth logs. Extracted specific event fields, timestamps, and flagged failed authentication patterns."
+      },
+      {
+        "day": 12,
+        "title": "Active Service Reconnaissance",
+        "activity": "Wrote Python scripts for banner grabbing and service version scanning. Handled socket connections to discover running service details and flag vulnerable versions."
+      },
+      {
+        "day": 13,
+        "title": "Traffic Baseline Profiling",
+        "activity": "Studied network traffic profiling, baseline metrics collection, and anomaly detection principles. Formulated rules for identifying traffic deviation anomalies."
+      },
+      {
+        "day": 14,
+        "title": "SSH Automation Security",
+        "activity": "Developed secure Python scripts using Paramiko to automate SSH administrative commands, enforce key-based authentication, and audit configuration directories."
+      },
+      {
+        "day": 15,
+        "title": "Wireshark Packet Auditing",
+        "activity": "Captured live loopback traffic in sandboxed environments. Used Wireshark filters to isolate anomalous TCP handshakes, payload signatures, and extract indicators of compromise."
+      },
+      {
+        "day": 16,
+        "title": "Web Assessment Lab",
+        "activity": "Conducted authorized vulnerability assessments on a sandboxed target. Documented cross-site scripting risks and formulated input sanitization remediation steps."
+      },
+      {
+        "day": 17,
+        "title": "Keylogger: Requirements",
+        "activity": "Defined system requirements, data flow specifications, and strict ethical boundaries for the keylogger awareness tool. Designed the keyboard event listener architecture."
+      },
+      {
+        "day": 18,
+        "title": "Keylogger: Environment Setup",
+        "activity": "Configured the local Python virtual environment. Implemented the keyboard event listener module using the pynput library to intercept keystroke inputs."
+      },
+      {
+        "day": 19,
+        "title": "Keylogger: Monitoring Core",
+        "activity": "Developed the core keystroke capture engine. Configured background listener threads to process and store intercepted key events into an active memory buffer."
+      },
+      {
+        "day": 20,
+        "title": "Keylogger: Regex Engine",
+        "activity": "Developed and integrated a multi-pattern Regular Expression matching engine to scan the keystroke buffer in real-time, successfully flagging passwords, email addresses, and OTP structures."
+      },
+      {
+        "day": 21,
+        "title": "Keylogger: Database Storage",
+        "activity": "Integrated SQLite for local storage. Created secure tables to store timestamped alerts of sensitive data logs, applying parameterized queries to prevent database injection."
+      },
+      {
+        "day": 22,
+        "title": "Keylogger: Dashboard UI",
+        "activity": "Created a graphical dashboard using Tkinter. Displayed real-time statistics, cumulative logs, and alert panels highlighting detected sensitive data leakage."
+      },
+      {
+        "day": 23,
+        "title": "Keylogger: Testing & Validation",
+        "activity": "Validated detection accuracy across multiple typing patterns. Audited the keystroke capture latency, resolved SQLite locking exceptions, and finalized documentation."
+      },
+      {
+        "day": 24,
+        "title": "IDS: Dataset Exploration",
+        "activity": "Studied machine learning intrusion detection concepts. Completed exploratory data analysis on the NSL-KDD benchmark dataset, verifying class labels and attribute distributions."
+      },
+      {
+        "day": 25,
+        "title": "IDS: Model Architectures",
+        "activity": "Normalized features using Min-Max scaling and balanced minority attack classes using SMOTE. Implemented spatial CNN and temporal LSTM models in TensorFlow."
+      },
+      {
+        "day": 26,
+        "title": "IDS: Performance Evaluation",
+        "activity": "Evaluated model performance using Confusion Matrix, ROC-AUC, precision, and recall metrics. Generated model interpretability visual reports using SHAP and LIME frameworks."
+      }
+    ],
+    "chapters": {
+      "ch1": [
+        { "heading": "1.1 Introduction to Internship", "paragraphs": [""], "bullets": [] },
+        { "heading": "1.2 Importance of Internship", "paragraphs": [""], "bullets": [] },
+        { "heading": "1.3 Objectives of Internship", "paragraphs": [""], "bullets": [] },
+        { "heading": "1.4 Scope of Work", "paragraphs": [""], "bullets": [] },
+        { "heading": "1.5 Duration of Internship", "paragraphs": [""], "bullets": [] }
+      ],
+      "ch2": [
+        { "heading": "2.1 About the Company", "paragraphs": [""], "bullets": [] },
+        { "heading": "2.2 Vision and Mission", "paragraphs": [""], "bullets": [] },
+        { "heading": "2.3 Services/Products", "paragraphs": [""], "bullets": [] },
+        { "heading": "2.4 Organizational Structure", "paragraphs": [""], "bullets": [] },
+        { "heading": "2.5 Departments", "paragraphs": [""], "bullets": [] },
+        { "heading": "2.6 Technologies Used", "paragraphs": [""], "bullets": [] }
+      ],
+      "ch3": [
+        { "heading": "3.1 Daily Activities", "paragraphs": [""], "bullets": [] },
+        { "heading": "3.2 Tasks Assigned", "paragraphs": [""], "bullets": [] },
+        { "heading": "3.3 Modules Handled", "paragraphs": [""], "bullets": [] },
+        { "heading": "3.4 Software/Tools Used", "paragraphs": [""], "bullets": [] },
+        { "heading": "3.5 Technologies Learned", "paragraphs": [""], "bullets": [] },
+        { "heading": "3.6 Training Sessions Attended", "paragraphs": [""], "bullets": [] }
+      ],
+      "ch4": [
+        { "heading": "4.1 Project Title", "paragraphs": ["{projectTitle}"], "bullets": [] },
+        { "heading": "4.2 Problem Statement", "paragraphs": ["{problemStatement}"], "bullets": [] },
+        { "heading": "4.3 Objectives", "paragraphs": ["{projectObjective}"], "bullets": [] },
+        { "heading": "4.4 Software & Hardware Requirements", "paragraphs": [""], "bullets": [] },
+        { "heading": "4.5 Methodology", "paragraphs": ["{methodology}"], "bullets": [] },
+        { "heading": "4.6 System Design", "paragraphs": [""], "bullets": [] },
+        { "heading": "4.7 Implementation", "paragraphs": [""], "bullets": [] },
+        { "heading": "4.8 Testing", "paragraphs": [""], "bullets": [] },
+        { "heading": "4.9 Output Screens", "paragraphs": [""], "bullets": [] },
+        { "heading": "4.10 Result", "paragraphs": [""], "bullets": [] }
+      ],
+      "ch5": [
+        { "heading": "5.1 Skills Developed", "paragraphs": [""], "bullets": [] },
+        { "heading": "5.2 Knowledge Gained", "paragraphs": [""], "bullets": [] },
+        { "heading": "5.3 Industry Exposure", "paragraphs": [""], "bullets": [] },
+        { "heading": "5.4 Communication Improvement", "paragraphs": [""], "bullets": [] },
+        { "heading": "5.5 Teamwork Experience", "paragraphs": [""], "bullets": [] },
+        { "heading": "5.6 Challenges Faced", "paragraphs": [""], "bullets": [] }
+      ],
+      "ch6": [
+        { "heading": "6.1 Overall Internship Experience", "paragraphs": [""], "bullets": [] },
+        { "heading": "6.2 Benefits Gained", "paragraphs": [""], "bullets": [] },
+        { "heading": "6.3 Career Relevance", "paragraphs": [""], "bullets": [] },
+        { "heading": "6.4 Final Observations", "paragraphs": [""], "bullets": [] }
+      ]
+    },
+    "references": [
+      "1. Author Name, Book Title, Publisher, Year.",
+      "2. Official documentation websites.",
+      "3. Online tutorials and technical resources."
+    ]
+  };
+
+  const STATE_KEY = 'report_generator_offline_state';
+  
+  // Local Database of Domains
+  const domainDatabase = {
+    "AI with Cybersecurity": defaultDomainData
+  };
+  
+  let appState = {
+    studentName: 'Harikrishnan P',
+    registerNumber: '4543',
+    apaarId: '533007097990',
+    course: 'Bachelor of Science in Computer Science',
+    courseCode: 'UK4INTCSC200',
+    semester: '4th Semester',
+    academicYear: '2025–2026',
+    collegeName: 'Naipunnya School of Management',
+    department: 'Department of Computer Science & Applications',
+    collegeLocation: 'Cherthala, Alappuzha, Kerala',
+    universityName: 'University of Kerala',
+    hodName: 'Mr. VINOD CHANDRAN',
+    principalName: 'Rev. Fr. Dr. BENNY JOHN MARAMPARAMPIL',
+    
+    // Domain & Company values
+    selectedDomain: 'AI with Cybersecurity',
+    companyName: 'Logiccraft Software Solutions',
+    companyAddress: 'Cherthala, Alappuzha, Kerala',
+    internshipDuration: '26-day Internship',
+    startDate: '2026-04-01',
+    endDate: '2026-04-26',
+    internshipDomain: 'AI with Cybersecurity',
+    internshipTopic: 'AI with Cybersecurity Defensive Engineering',
+    mentorName: 'Mr. Rahul Dev',
+    facultyGuideName: 'Mr Vivek S Varma',
+    facultyGuideDesignation: 'Assistant Professor',
+    
+    // Project Details
+    noProject: false,
+    projectTitle: 'AI-Based Intrusion Detection System',
+    problemStatement: 'Polymorphic malware, network scans, and slow DoS attacks evade classic rule-based detection systems, leaving networks vulnerable.',
+    projectObjective: 'Develop and train spatial CNN and temporal LSTM models to identify malicious traffic patterns using benchmark datasets.',
+    projectDescription: 'The project implements a deep learning pipeline preprocessing NSL-KDD datasets with SMOTE, training Convolutional Neural Networks and LSTMs, and explaining outputs with SHAP/LIME.',
+    technologiesUsed: 'TensorFlow, Keras, Scikit-learn, SHAP, LIME',
+    programmingLanguages: 'Python 3.12',
+    toolsUsed: 'Wireshark, SQLite, VS Code, Splunk',
+    datasetUsed: 'NSL-KDD and UNSW-NB15',
+    methodology: 'Min-Max feature normalization, SMOTE balancing, CNN spatial training, LSTM sequence modeling, model scoring, and LIME explanations.',
+    
+    numDays: 26,
+    dailyActivities: [],
+    totalPages: 32,
+    customChapters: null,
+    customChaptersDomain: ''
+  };
+
+  const chaptersMetadata = [
+    { id: 'certBullets', title: 'Organization Certificate Topics', budgetDesc: 'Prelim (Page 3)' },
+    { id: 'ch1', title: 'Chapter 1 – Introduction', budgetKey: 'ch1' },
+    { id: 'ch2', title: 'Chapter 2 – Organization Profile', budgetKey: 'ch2' },
+    { id: 'ch3', title: 'Chapter 3 – Internship Activities Narrative', budgetKey: 'ch3' },
+    { id: 'ch4', title: 'Chapter 4 – Project Work / Technical Learning', budgetKey: 'ch4' },
+    { id: 'ch5', title: 'Chapter 5 – Findings and Learning Outcomes', budgetKey: 'ch5' },
+    { id: 'ch6', title: 'Chapter 6 – Conclusion', budgetKey: 'ch6' },
+    { id: 'references', title: 'References', budgetDesc: 'End Page' }
+  ];
+
+  window.onload = () => {
+    initDomainSelector();
+    loadAppState();
+    updateUI();
+  };
+
+  function initDomainSelector() {
+    const select = document.getElementById('domainSelect');
+    select.innerHTML = '';
+    Object.keys(domainDatabase).forEach(domain => {
+      const opt = document.createElement('option');
+      opt.value = domain;
+      opt.textContent = domain;
+      select.appendChild(opt);
+    });
+  }
+
+  function loadAppState() {
+    const saved = localStorage.getItem(STATE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.customDomains) {
+          Object.keys(parsed.customDomains).forEach(domain => {
+            domainDatabase[domain] = parsed.customDomains[domain];
+          });
+          initDomainSelector();
+        }
+        appState = { ...appState, ...parsed };
+      } catch (e) {
+        console.error("Failed to load saved state", e);
+      }
+    }
+    
+    if (!domainDatabase[appState.selectedDomain]) {
+      appState.selectedDomain = Object.keys(domainDatabase)[0];
+    }
+    
+    document.getElementById('domainSelect').value = appState.selectedDomain;
+    syncAppStateToUI();
+    generateDailyLogInputs();
+    initCustomChapters();
+  }
+
+  function syncAppStateToUI() {
+    Object.keys(appState).forEach(key => {
+      const el = document.getElementById(key);
+      if (el) {
+        if (el.type === 'checkbox') {
+          el.checked = appState[key];
+        } else {
+          el.value = appState[key];
+        }
+      }
+    });
+    toggleProjectFields();
+  }
+
+  function syncReportDetailsToCh4() {
+    if (appState.noProject) return;
+    initCustomChapters();
+    const ch4 = appState.customChapters.ch4;
+    if (!ch4 || ch4.length < 5) return;
+
+    if (ch4[0] && ch4[0].paragraphs) {
+      ch4[0].paragraphs[0] = appState.projectTitle || '';
+      if (ch4[0].customBlockText !== undefined && !ch4[0].useCustomBlock) {
+        ch4[0].customBlockText = appState.projectTitle || '';
+      }
+    }
+    if (ch4[1] && ch4[1].paragraphs) {
+      ch4[1].paragraphs[0] = appState.problemStatement || '';
+      if (ch4[1].customBlockText !== undefined && !ch4[1].useCustomBlock) {
+        ch4[1].customBlockText = appState.problemStatement || '';
+      }
+    }
+    if (ch4[2] && ch4[2].paragraphs) {
+      ch4[2].paragraphs[0] = appState.projectObjective || '';
+      if (ch4[2].customBlockText !== undefined && !ch4[2].useCustomBlock) {
+        ch4[2].customBlockText = appState.projectObjective || '';
+      }
+    }
+    if (ch4[4] && ch4[4].paragraphs) {
+      ch4[4].paragraphs[0] = appState.methodology || '';
+      if (ch4[4].customBlockText !== undefined && !ch4[4].useCustomBlock) {
+        ch4[4].customBlockText = appState.methodology || '';
+      }
+    }
+  }
+
+  function saveAppState() {
+    const keysToRead = [
+      'studentName', 'registerNumber', 'apaarId', 'course', 'courseCode', 
+      'semester', 'academicYear', 'collegeName', 'department', 'collegeLocation', 
+      'universityName', 'hodName', 'principalName', 'companyName', 'companyAddress', 'internshipDuration', 
+      'startDate', 'endDate', 'internshipDomain', 'internshipTopic', 'mentorName', 
+      'facultyGuideName', 'facultyGuideDesignation', 'noProject', 'projectTitle', 
+      'problemStatement', 'projectObjective', 'projectDescription', 'technologiesUsed', 
+      'programmingLanguages', 'toolsUsed', 'datasetUsed', 'methodology', 'numDays', 'totalPages'
+    ];
+    
+    keysToRead.forEach(key => {
+      const el = document.getElementById(key);
+      if (el) {
+        if (el.type === 'checkbox') {
+          appState[key] = el.checked;
+        } else if (el.type === 'number') {
+          appState[key] = parseInt(el.value) || 0;
+        } else {
+          appState[key] = el.value;
+        }
+      }
+    });
+
+    syncReportDetailsToCh4();
+    
+    const numDays = appState.numDays || 26;
+    const activities = [];
+    for (let d = 1; d <= numDays; d++) {
+      const titleEl = document.getElementById(`day-title-${d}`);
+      const descEl = document.getElementById(`day-desc-${d}`);
+      const hoursEl = document.getElementById(`day-hours-${d}`);
+      activities.push({
+        day: d,
+        title: titleEl ? titleEl.value : '',
+        activity: descEl ? descEl.value : '',
+        hours: hoursEl ? (parseInt(hoursEl.value) || 4) : 4
+      });
+    }
+    appState.dailyActivities = activities;
+    
+    const customDomains = {};
+    Object.keys(domainDatabase).forEach(domain => {
+      if (domain !== "AI with Cybersecurity") {
+        customDomains[domain] = domainDatabase[domain];
+      }
+    });
+    
+    const stateToSave = {
+      ...appState,
+      customDomains
+    };
+    
+    localStorage.setItem(STATE_KEY, JSON.stringify(stateToSave));
+  }
+
+  function resetForm() {
+    openConfirmModal();
+  }
+
+  function openConfirmModal() {
+    const modal = document.getElementById('confirmModal');
+    if (modal) modal.classList.add('show');
+  }
+
+  function closeConfirmModal() {
+    const modal = document.getElementById('confirmModal');
+    if (modal) modal.classList.remove('show');
+  }
+
+  function executeResetForm() {
+    closeConfirmModal();
+    localStorage.removeItem(STATE_KEY);
+    
+    // Clear student details
+    appState.studentName = '';
+    appState.registerNumber = '';
+    appState.apaarId = '';
+    appState.course = '';
+    appState.courseCode = '';
+    appState.semester = '';
+    appState.academicYear = '';
+    appState.collegeName = '';
+    appState.department = '';
+    appState.collegeLocation = '';
+    appState.universityName = '';
+    appState.hodName = '';
+    appState.principalName = '';
+    
+    // Clear company details
+    appState.companyName = '';
+    appState.companyAddress = '';
+    appState.internshipDuration = '';
+    appState.startDate = '';
+    appState.endDate = '';
+    appState.internshipDomain = '';
+    appState.internshipTopic = '';
+    appState.mentorName = '';
+    appState.facultyGuideName = '';
+    appState.facultyGuideDesignation = '';
+    
+    // Clear project details
+    appState.noProject = false;
+    appState.projectTitle = '';
+    appState.problemStatement = '';
+    appState.projectObjective = '';
+    appState.projectDescription = '';
+    appState.technologiesUsed = '';
+    appState.programmingLanguages = '';
+    appState.toolsUsed = '';
+    appState.datasetUsed = '';
+    appState.methodology = '';
+    
+    // Clear references
+    appState.references = [];
+    
+    // Clear custom chapters
+    appState.customChapters = null;
+    appState.customChaptersDomain = '';
+
+    // Clear daily activity logs to empty records
+    appState.dailyActivities = [];
+    const numDays = parseInt(appState.numDays) || 26;
+    for (let d = 1; d <= numDays; d++) {
+      appState.dailyActivities.push({
+        day: d,
+        title: '',
+        activity: '',
+        hours: 4
+      });
+    }
+
+    localStorage.setItem(STATE_KEY, JSON.stringify(appState));
+    syncAppStateToUI();
+    generateDailyLogInputs();
+    initCustomChapters();
+    if (typeof renderCustomChapterEditor === 'function') {
+      renderCustomChapterEditor();
+    }
+    updateUI();
+    showToast("Caches cleared successfully");
+    addLog("Form caches cleared.", "info");
+  }
+
+  function onDomainChanged() {
+    const selected = document.getElementById('domainSelect').value;
+    appState.selectedDomain = selected;
+    
+    const domainData = domainDatabase[selected];
+    if (domainData) {
+      appState.internshipDomain = domainData.domainName;
+      if (domainData.metadata) {
+        appState.internshipTopic = domainData.metadata.internshipTopic || domainData.domainName;
+        appState.companyName = domainData.metadata.companyName || '';
+        appState.companyAddress = domainData.metadata.companyAddress || '';
+        appState.internshipDuration = domainData.metadata.internshipDuration || '';
+        appState.mentorName = domainData.metadata.mentorName || '';
+        appState.projectTitle = domainData.metadata.projectTitle || '';
+        appState.problemStatement = domainData.metadata.problemStatement || '';
+        appState.projectObjective = domainData.metadata.projectObjective || '';
+        appState.projectDescription = domainData.metadata.projectDescription || '';
+        appState.technologiesUsed = domainData.metadata.technologiesUsed || '';
+        appState.programmingLanguages = domainData.metadata.programmingLanguages || '';
+        appState.toolsUsed = domainData.metadata.toolsUsed || '';
+        appState.datasetUsed = domainData.metadata.datasetUsed || '';
+        appState.methodology = domainData.metadata.methodology || '';
+        appState.numDays = domainData.metadata.numDays || 26;
+      }
+      
+      appState.dailyActivities = JSON.parse(JSON.stringify(domainData.dailyActivities || []));
+      appState.customChapters = null;
+      initCustomChapters();
+      
+      syncAppStateToUI();
+      generateDailyLogInputs();
+      updateUI();
+      addLog("Changed domain RAG set to: " + selected, "info");
+    }
+  }
+
+  function handleDomainImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const imported = JSON.parse(e.target.result);
+        if (!imported.domainName || !imported.chapters || !imported.dailyActivities) {
+          alert("Invalid Domain RAG Set file format. Must contain domainName, chapters, and dailyActivities.");
+          addLog("Error: Invalid domain JSON imported", "error");
+          return;
+        }
+        
+        domainDatabase[imported.domainName] = imported;
+        initDomainSelector();
+        
+        document.getElementById('domainSelect').value = imported.domainName;
+        onDomainChanged();
+        
+        showToast("✓ Imported domain " + imported.domainName);
+        addLog("Imported domain RAG set: " + imported.domainName, "success");
+      } catch (err) {
+        alert("Failed to parse JSON file.");
+        addLog("Error parsing JSON: " + err.message, "error");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  async function handlePDFImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    addLog("Loading PDF file: " + file.name + "...", "info");
+    showToast("📄 Loading and parsing PDF...");
+
+    try {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      
+      addLog(`PDF loaded successfully. Extracting text from ${pdf.numPages} pages...`, "info");
+      
+      let fullText = '';
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const items = textContent.items;
+        if (!items || items.length === 0) continue;
+        
+        // Group items that have similar Y coordinates (within a threshold of 4 points)
+        const linesMap = [];
+        items.forEach(item => {
+          if (!item.str || item.str.trim() === '') return;
+          const x = item.transform[4];
+          const y = item.transform[5];
+          
+          let foundLine = linesMap.find(line => Math.abs(line.y - y) < 4);
+          if (foundLine) {
+            foundLine.items.push(item);
+          } else {
+            linesMap.push({ y: y, items: [item] });
+          }
+        });
+        
+        // Sort lines by Y descending (top to bottom of page)
+        linesMap.sort((a, b) => b.y - a.y);
+        
+        // For each line, sort items by X ascending (left to right) and join with space
+        const pageLines = linesMap.map(line => {
+          line.items.sort((a, b) => a.transform[4] - b.transform[4]);
+          return line.items.map(item => item.str).join(' ');
+        });
+        
+        fullText += `\n` + pageLines.join('\n');
+      }
+      
+      addLog("PDF text extracted with line breaks. Compiling domain RAG set using heuristics...", "info");
+      
+      const parsedRAG = parseReferencePDFText(fullText);
+      if (!parsedRAG || !parsedRAG.domainName) {
+        throw new Error("Could not parse domain structure from PDF.");
+      }
+
+      domainDatabase[parsedRAG.domainName] = parsedRAG;
+      initDomainSelector();
+      
+      document.getElementById('domainSelect').value = parsedRAG.domainName;
+      onDomainChanged();
+      
+      showToast("✓ PDF RAG imported: " + parsedRAG.domainName);
+      addLog("✓ Successfully parsed and imported PDF RAG: " + parsedRAG.domainName, "success");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to parse PDF: " + err.message);
+      addLog("Error parsing PDF: " + err.message, "error");
+    }
+  }
+
+  function parseReferencePDFText(text) {
+    let domainName = "";
+    const domainPatterns = [
+      /(?:REPORT\s+ON|INTERNSHIP\s+REPORT\s+ON|REPORT\s+OF\s+INTERNSHIP\s+ON)\s*\n*\s*([A-Za-z0-9\s&–\-]{4,60})/i,
+      /(?:SUMMER\s+INTERNSHIP\s+REPORT\s+ON)\s*\n*\s*([A-Za-z0-9\s&–\-]{4,60})/i,
+      /(?:INTERNSHIP\s+IN)\s*\n*\s*([A-Za-z0-9\s&–\-]{4,60})/i
+    ];
+    
+    for (const pattern of domainPatterns) {
+      const match = text.match(pattern);
+      if (match && match[1]) {
+        domainName = match[1].trim().replace(/\s+/g, ' ');
+        domainName = domainName.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.substring(1)).join(' ');
+        break;
+      }
+    }
+    
+    if (!domainName || domainName.toLowerCase().includes("submitted in partial") || domainName.toLowerCase().includes("bachelor of science")) {
+      domainName = "Custom Domain";
+    }
+
+    addLog("Parsed Domain Name: " + domainName, "info");
+
+    const abbreviations = [];
+    const lines = text.split('\n');
+    let inAbbrevSection = false;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+      
+      if (line.toUpperCase().includes("LIST OF ABBREVIATIONS") || line.toUpperCase().includes("ABBREVIATIONS")) {
+        inAbbrevSection = true;
+        continue;
+      }
+      
+      if (inAbbrevSection && (line.toUpperCase().includes("CHAPTER") || line.toUpperCase().includes("1.1") || line.toUpperCase().includes("INTRODUCTION"))) {
+        inAbbrevSection = false;
+      }
+      
+      if (inAbbrevSection) {
+        const parts = line.split(/\s+/);
+        if (parts.length >= 2) {
+          const abbr = parts[0].trim();
+          const fullForm = line.substring(line.indexOf(abbr) + abbr.length).replace(/^[–\-—\s]+/, '').trim();
+          
+          if (abbr.length >= 2 && abbr.length <= 12 && (/^[A-Z0-9\/&\-]+$/.test(abbr) || abbr === "DoS")) {
+            if (fullForm.length > 3) {
+              abbreviations.push({
+                abbreviation: abbr,
+                fullForm: fullForm
+              });
+            }
+          }
+        }
+      }
+    }
+    
+    if (abbreviations.length === 0) {
+      const defaultData = domainDatabase["AI with Cybersecurity"] || defaultDomainData;
+      abbreviations.push(...JSON.parse(JSON.stringify(defaultData.abbreviations || [])));
+    }
+    addLog(`Parsed ${abbreviations.length} Abbreviations`, "info");
+
+    const dailyActivities = [];
+    const actionVerbs = ["Analyzed", "Explored", "Studied", "Practiced", "Performed", "Revised", "Developed", "Used", "Created", "Captured", "Configured", "Defined", "Implemented", "Integrated", "Validated", "Tested", "Completed", "Conducted", "Audited", "Wrote", "Integrated", "Revised"];
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+      
+      const dayMatch = line.match(/^Day\s+(\d+)(?::|-|\s+)?\s*(.*)$/i);
+      const tableMatch = line.match(/^([1-9]|1\d|2[0-6])\s+(.*)$/);
+      
+      if (dayMatch) {
+        const dayNum = parseInt(dayMatch[1]);
+        const rest = dayMatch[2].trim();
+        
+        const words = rest.split(/\s+/);
+        const titleWords = [];
+        const descWords = [];
+        let inDesc = false;
+        
+        words.forEach(w => {
+          if (actionVerbs.includes(w) || inDesc || (w && w[0] === w[0].toLowerCase())) {
+            inDesc = true;
+            descWords.push(w);
+          } else {
+            titleWords.push(w);
+          }
+        });
+        
+        dailyActivities.push({
+          day: dayNum,
+          title: titleWords.join(' ').trim() || "Activity Logs",
+          activity: descWords.join(' ').trim() || "Worked on domain-specific activities.",
+          hours: 4
+        });
+      } else if (tableMatch) {
+        const dayNum = parseInt(tableMatch[1]);
+        const rest = tableMatch[2].trim();
+        
+        const words = rest.split(/\s+/);
+        const titleWords = [];
+        const descWords = [];
+        let inDesc = false;
+        
+        words.forEach(w => {
+          if (actionVerbs.includes(w) || inDesc || (w && w[0] === w[0].toLowerCase())) {
+            inDesc = true;
+            descWords.push(w);
+          } else {
+            titleWords.push(w);
+          }
+        });
+        
+        dailyActivities.push({
+          day: dayNum,
+          title: titleWords.join(' ').trim() || "Activity Logs",
+          activity: descWords.join(' ').trim() || "Worked on domain-specific activities.",
+          hours: 4
+        });
+      } else if (dailyActivities.length > 0) {
+        if (line.length > 0 && !line.includes("Page") && !line.includes("Summer Internship Report") && !line.includes("Reg:")) {
+          const lastAct = dailyActivities[dailyActivities.length - 1];
+          if (lastAct.activity.length < 500) {
+            lastAct.activity += " " + line;
+          }
+        }
+      }
+    }
+
+    const uniqueActivities = [];
+    const activitiesMap = {};
+    dailyActivities.forEach(act => {
+      if (!activitiesMap[act.day] || act.activity.length > activitiesMap[act.day].activity.length) {
+        activitiesMap[act.day] = act;
+      }
+    });
+    
+    for (let d = 1; d <= 26; d++) {
+      if (activitiesMap[d]) {
+        uniqueActivities.push(activitiesMap[d]);
+      }
+    }
+    uniqueActivities.sort((a, b) => a.day - b.day);
+    
+    if (uniqueActivities.length === 0) {
+      for (let d = 1; d <= 26; d++) {
+        uniqueActivities.push({
+          day: d,
+          title: `Activity for Day ${d}`,
+          activity: `Completed scheduled tasks, scripts development and testing under the guidance of the company mentor.`,
+          hours: 4
+        });
+      }
+    }
+    addLog(`Parsed ${uniqueActivities.length} Daily Log Entries`, "info");
+
+    const chapters = { ch1: [], ch2: [], ch3: [], ch4: [], ch5: [], ch6: [] };
+    const rawChapters = text.split(/(?:CHAPTER|Chapter)\s+(\d+)/i);
+    
+    for (let cIdx = 1; cIdx < rawChapters.length; cIdx += 2) {
+      const chNum = parseInt(rawChapters[cIdx]);
+      const chContent = rawChapters[cIdx + 1] || "";
+      if (chNum >= 1 && chNum <= 6) {
+        const chKey = `ch${chNum}`;
+        const sectionsList = [];
+        const chLines = chContent.split('\n');
+        
+        let currentSection = null;
+        let currentParas = [];
+        let activeParagraph = "";
+        let inDailyLogTable = false;
+        
+        const headingRegex = new RegExp(`^(${chNum}\\.\\d+(?:\\.\\d+)?)\\s+(.+)$`);
+        
+        for (let i = 0; i < chLines.length; i++) {
+          const line = chLines[i].trim();
+          if (!line) {
+            if (activeParagraph.trim().length > 0) {
+              currentParas.push(activeParagraph.trim());
+              activeParagraph = "";
+            }
+            continue;
+          }
+          
+          if (line.includes("Page") || line.includes("Summer Internship Report") || line.includes("Naipunnya") || line.includes("Cherthala") || line.includes("Reg:")) {
+            continue;
+          }
+          
+          if (chNum === 3) {
+            if (line.includes("3.5") || line.toUpperCase().includes("DAILY ACTIVITY LOG")) {
+              inDailyLogTable = true;
+              if (currentSection) {
+                if (activeParagraph.trim().length > 0) {
+                  currentParas.push(activeParagraph.trim());
+                  activeParagraph = "";
+                }
+                sectionsList.push({
+                  heading: currentSection,
+                  paragraphs: currentParas.filter(p => p.length > 20),
+                  bullets: []
+                });
+                currentSection = null;
+              }
+              continue;
+            }
+            if (line.includes("3.6") || line.toUpperCase().includes("TOOLS AND TECHNOLOGIES MASTERED")) {
+              inDailyLogTable = false;
+            }
+          }
+          
+          if (inDailyLogTable) {
+            continue;
+          }
+          
+          const m = line.match(headingRegex);
+          if (m) {
+            if (currentSection) {
+              if (activeParagraph.trim().length > 0) {
+                currentParas.push(activeParagraph.trim());
+                activeParagraph = "";
+              }
+              sectionsList.push({
+                heading: currentSection,
+                paragraphs: currentParas.filter(p => p.length > 20),
+                bullets: []
+              });
+            }
+            currentSection = line;
+            currentParas = [];
+            activeParagraph = "";
+          } else {
+            if (currentSection) {
+              if (line.startsWith('•') || line.startsWith('-') || line.startsWith('o')) {
+                if (activeParagraph.trim().length > 0) {
+                  currentParas.push(activeParagraph.trim());
+                  activeParagraph = "";
+                }
+                const bulletText = line.replace(/^[•\-\*o]\s*/, '').trim();
+                if (bulletText.length > 0) {
+                  currentParas.push(bulletText);
+                }
+              } else {
+                activeParagraph += " " + line;
+              }
+            }
+          }
+        }
+        
+        if (currentSection) {
+          if (activeParagraph.trim().length > 0) {
+            currentParas.push(activeParagraph.trim());
+          }
+          sectionsList.push({
+            heading: currentSection,
+            paragraphs: currentParas.filter(p => p.length > 20),
+            bullets: []
+          });
+        }
+        
+        chapters[chKey] = sectionsList;
+      }
+    }
+
+    const defaultData = domainDatabase["AI with Cybersecurity"] || defaultDomainData;
+    for (let c = 1; c <= 6; c++) {
+      const chKey = `ch${c}`;
+      if (chapters[chKey].length === 0) {
+        addLog(`Warning: No content parsed for Chapter ${c}, loading templates.`, "warning");
+        chapters[chKey] = JSON.parse(JSON.stringify(defaultData.chapters[chKey] || []));
+      } else {
+        addLog(`Parsed Chapter ${c}: ${chapters[chKey].length} sections`, "info");
+      }
+    }
+
+    const cleanStr = (str) => {
+      if (!str) return '';
+      let s = str.replace(/\s+/g, ' ');
+      s = s.replace("fo r", "for")
+           .replace("m odels", "models")
+           .replace("repor t", "report")
+           .replace("deserializati on", "deserialization")
+           .replace("explainabi lity", "explainability")
+           .replace("vulnera bility", "vulnerability")
+           .replace("in cluding", "including")
+           .replace("progra mme", "programme")
+           .replace("speciﬁcally", "specifically");
+      return s;
+    };
+    
+    Object.keys(chapters).forEach(chKey => {
+      chapters[chKey].forEach(sec => {
+        sec.heading = cleanStr(sec.heading);
+        sec.paragraphs = sec.paragraphs.map(p => cleanStr(p));
+      });
+    });
+    
+    uniqueActivities.forEach(act => {
+      act.title = cleanStr(act.title);
+      act.activity = cleanStr(act.activity);
+    });
+
+    return {
+      domainName,
+      metadata: {
+        internshipDomain: domainName,
+        internshipTopic: domainName + " System Engineering",
+        companyName: "{companyName}",
+        companyAddress: "{companyAddress}",
+        internshipDuration: "{internshipDuration}",
+        mentorName: "{mentorName}",
+        projectTitle: "{projectTitle}",
+        problemStatement: "{problemStatement}",
+        projectObjective: "{projectObjective}",
+        projectDescription: "{projectDescription}",
+        technologiesUsed: "{technologiesUsed}",
+        programmingLanguages: "{programmingLanguages}",
+        toolsUsed: "{toolsUsed}",
+        datasetUsed: "{datasetUsed}",
+        methodology: "{methodology}",
+        numDays: uniqueActivities.length
+      },
+      abbreviations,
+      certBullets: [
+        "Hands-on exposure to " + domainName + " frameworks.",
+        "Testing of modules using {programmingLanguages}.",
+        "Configuration of technical workflows related to {internshipTopic}.",
+        "Participation in verification protocols under mentorship."
+      ],
+      dailyActivities: uniqueActivities,
+      chapters,
+      references: [
+        "Russell, S., & Norvig, P. (2020). Artificial Intelligence: A Modern Approach (4th ed.). Pearson.",
+        "Official Documentation and Reference Standards for " + domainName
+      ]
+    };
+  }
+
+  function toggleProjectFields() {
+    const noProj = document.getElementById('noProject').checked;
+    document.getElementById('projectFields').style.display = noProj ? 'none' : 'block';
+    document.getElementById('noProjectPlaceholder').style.display = noProj ? 'block' : 'none';
+    appState.noProject = noProj;
+    
+    const customCb = document.getElementById('customCh4NoProject');
+    if (customCb) customCb.checked = noProj;
+
+    initCustomChapters();
+    saveAppState();
+    if (typeof renderCustomChapterEditor === 'function') {
+      renderCustomChapterEditor();
+    }
+    updateUI();
+  }
+
+  function toggleNoProjectFromCustomChapters(checked) {
+    appState.noProject = checked;
+    const mainCb = document.getElementById('noProject');
+    if (mainCb) mainCb.checked = checked;
+    
+    const pFields = document.getElementById('projectFields');
+    if (pFields) pFields.style.display = checked ? 'none' : 'block';
+    const noProjPlaceholder = document.getElementById('noProjectPlaceholder');
+    if (noProjPlaceholder) noProjPlaceholder.style.display = checked ? 'block' : 'none';
+    
+    initCustomChapters();
+    saveAppState();
+    renderCustomChapterEditor();
+    updateUI();
+  }
+
+  function switchMainTab(name) {
+    document.querySelectorAll('.flow-tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.editor-container').forEach(c => c.classList.remove('active'));
+
+    document.getElementById(`btn-flow-${name}`).classList.add('active');
+    document.getElementById(`flow-${name}`).classList.add('active');
+
+    if (name === 'custom-chapters') {
+      renderCustomChapterEditor();
+    }
+  }
+
+  function switchConfigTab(name) {
+    document.querySelectorAll('.tab-config-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.panel-config').forEach(pnl => pnl.classList.remove('active'));
+
+    document.getElementById(`btn-config-${name}`).classList.add('active');
+    document.getElementById(`tab-${name}`).classList.add('active');
+  }
+
+  function initCustomChapters() {
+    const domainData = domainDatabase[appState.selectedDomain] || defaultDomainData;
+    if (!appState.customChapters || appState.customChaptersDomain !== appState.selectedDomain) {
+      appState.customChapters = JSON.parse(JSON.stringify(domainData.chapters));
+      appState.customChaptersDomain = appState.selectedDomain;
+    }
+    
+    if (appState.noProject) {
+      const isProjectBased = appState.customChapters.ch4.some(sec => sec.heading.includes("Project Title") || sec.heading.includes("4.1 Project Title"));
+      if (isProjectBased || appState.customChapters.ch4.length !== 3) {
+        appState.customChapters.ch4 = [
+          { "heading": "4.1 Technical Skills Acquired", "paragraphs": [""], "bullets": [] },
+          { "heading": "4.2 Workshops Attended", "paragraphs": [""], "bullets": [] },
+          { "heading": "4.3 Practical Exposure Gained", "paragraphs": [""], "bullets": [] }
+        ];
+      }
+    } else {
+      const isSkillBased = appState.customChapters.ch4.some(sec => sec.heading.includes("Technical Skills") || sec.heading.includes("4.1 Technical Skills"));
+      if (isSkillBased || appState.customChapters.ch4.length === 3) {
+        appState.customChapters.ch4 = JSON.parse(JSON.stringify(domainData.chapters.ch4));
+        syncReportDetailsToCh4();
+      }
+    }
+
+    Object.keys(appState.customChapters).forEach(chKey => {
+      appState.customChapters[chKey].forEach(sec => {
+        if (sec.useCustomBlock === undefined) sec.useCustomBlock = false;
+        if (sec.customBlockText === undefined) {
+          sec.customBlockText = (sec.paragraphs || []).join('\n\n');
+        }
+      });
+    });
+  }
+
+  function renderCustomChapterEditor() {
+    initCustomChapters();
+    
+    const chKey = document.getElementById('customChapterSelect').value;
+    const optCh4 = document.getElementById('opt-custom-ch4');
+    if (optCh4) {
+      optCh4.textContent = appState.noProject ? 'Chapter 4 – Technical Learning & Skill Acquisition' : 'Chapter 4 – Project Work / Technical Learning';
+    }
+
+    const container = document.getElementById('customChapterSectionsEditor');
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (chKey === 'references') {
+      const cardDiv = document.createElement('div');
+      cardDiv.className = 'edit-section-card';
+      cardDiv.style.border = '1px solid var(--border-color)';
+      cardDiv.style.borderRadius = 'var(--radius-sm)';
+      cardDiv.style.padding = '1.2rem';
+      cardDiv.style.background = '#fff';
+      cardDiv.style.display = 'flex';
+      cardDiv.style.flexDirection = 'column';
+      cardDiv.style.gap = '1rem';
+
+      const domainData = domainDatabase[appState.selectedDomain] || defaultDomainData;
+      let currentRefs = appState.references;
+      if (!currentRefs || currentRefs.length === 0) {
+        currentRefs = domainData.references || [];
+      }
+      
+      const refsText = currentRefs.join('\n');
+
+      cardDiv.innerHTML = `
+        <div class="field">
+          <label style="font-weight:700;">References List</label>
+          <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.5rem;">
+            Enter each reference on a new line. Standard numbers (e.g. 1., 2.) or brackets (e.g. [1]) at the beginning will be automatically cleaned when compiling the report to avoid double-numbering.
+          </p>
+          <textarea id="referencesTextarea" rows="12" style="font-family: 'Times New Roman', serif; font-size: 0.95rem; line-height: 1.4; width:100%; padding:0.8rem;" placeholder="e.g. Author Name, Book Title, Publisher, Year." oninput="updateCustomReferences(this.value)">${refsText}</textarea>
+        </div>
+      `;
+      container.appendChild(cardDiv);
+      return;
+    }
+
+    if (chKey === 'ch4') {
+      const toggleDiv = document.createElement('div');
+      toggleDiv.className = 'no-project-toggle-container';
+      toggleDiv.style.marginBottom = '1.5rem';
+      toggleDiv.style.padding = '1rem';
+      toggleDiv.style.border = '1px dashed var(--primary-color)';
+      toggleDiv.style.borderRadius = 'var(--radius-sm)';
+      toggleDiv.style.background = 'var(--bg-light)';
+      toggleDiv.innerHTML = `
+        <label class="checkbox-field" style="display:flex; align-items:center; gap:8px; font-weight:700; cursor:pointer;">
+          <input type="checkbox" id="customCh4NoProject" ${appState.noProject ? 'checked' : ''} onchange="toggleNoProjectFromCustomChapters(this.checked)" />
+          No Project Work (Check this if you did not do a project and want to document Technical Learning instead)
+        </label>
+      `;
+      container.appendChild(toggleDiv);
+    }
+
+    const sections = appState.customChapters[chKey] || [];
+
+    // Calculate dynamic word target bounds based on current page budget
+    const budgetVal = calculatePageBudget(parseInt(appState.totalPages) || 32);
+    const chBudget = budgetVal.budget[chKey] || 2;
+    const sectionsCount = sections.length;
+    let totalTargetLines = chBudget * 36;
+    let availableLines = totalTargetLines - 1.5 - sectionsCount * 1.2;
+    if (chKey === 'ch1') availableLines -= 10;
+    
+    let totalBulletsCount = 0;
+    sections.forEach(s => {
+      if (s.bullets) totalBulletsCount += s.bullets.length;
+    });
+    let remainingLinesForParas = availableLines - totalBulletsCount * 1.5;
+    
+    let totalParasCount = 0;
+    sections.forEach(s => {
+      totalParasCount += (s.paragraphs || []).length;
+    });
+    if (totalParasCount === 0) totalParasCount = 1;
+    
+    let targetLinesPerPara = remainingLinesForParas / totalParasCount;
+    if (targetLinesPerPara < 3) targetLinesPerPara = 3;
+    let targetWordsPerPara = Math.round(targetLinesPerPara * 13.5);
+    
+    let minWords = Math.max(50, Math.round(targetWordsPerPara * 0.85));
+    let maxWords = Math.round(targetWordsPerPara * 1.15);
+    if (minWords < 120) {
+      minWords = 120;
+      maxWords = 200;
+    }
+
+    sections.forEach((sec, secIdx) => {
+      const secDiv = document.createElement('div');
+      secDiv.className = 'edit-section-card';
+      secDiv.style.border = '1px solid var(--border-color)';
+      secDiv.style.borderRadius = 'var(--radius-sm)';
+      secDiv.style.padding = '1.2rem';
+      secDiv.style.background = '#fff';
+      
+      const flexContainer = document.createElement('div');
+      flexContainer.className = 'section-flex-container';
+      
+      const inputsCol = document.createElement('div');
+      inputsCol.className = 'section-inputs-col';
+      
+      const previewCol = document.createElement('div');
+      previewCol.className = 'section-preview-col';
+      
+      // Left side inputs
+      // Section Heading input
+      const headingDiv = document.createElement('div');
+      headingDiv.className = 'field';
+      headingDiv.innerHTML = `
+        <label>Section Heading</label>
+        <input type="text" value="${sec.heading}" oninput="updateCustomSectionHeading('${chKey}', ${secIdx}, this.value)" />
+      `;
+      inputsCol.appendChild(headingDiv);
+
+      // Checkbox toggle for Custom Block mode
+      const toggleDiv = document.createElement('div');
+      toggleDiv.style.marginBottom = '0.5rem';
+      toggleDiv.innerHTML = `
+        <label class="checkbox-field" style="display:flex; align-items:center; gap:8px; font-weight:600; cursor:pointer;">
+          <input type="checkbox" ${sec.useCustomBlock ? 'checked' : ''} onchange="toggleSectionEditorMode('${chKey}', ${secIdx}, this.checked)" />
+          Replace section with a single custom text block (Optional)
+        </label>
+      `;
+      inputsCol.appendChild(toggleDiv);
+
+      // Block Textarea Container
+      const blockContainer = document.createElement('div');
+      blockContainer.style.display = sec.useCustomBlock ? 'flex' : 'none';
+      blockContainer.style.flexDirection = 'column';
+      blockContainer.style.gap = '0.5rem';
+      
+      const blockCountId = `wordcount-block-${chKey}-${secIdx}`;
+      const blockWords = countWords(sec.customBlockText || '');
+      const blockTargetWords = targetWordsPerPara * (sec.paragraphs || []).length;
+      const blockMinWords = Math.max(100, Math.round(blockTargetWords * 0.85));
+      const blockMaxWords = Math.round(blockTargetWords * 1.15);
+      
+      let blockColorClass = 'info';
+      if (blockWords >= blockMinWords && blockWords <= blockMaxWords) blockColorClass = 'success';
+      else if (blockWords > blockMaxWords) blockColorClass = 'warning';
+
+      blockContainer.innerHTML = `
+        <div class="para-recommendation-badge" id="${blockCountId}">
+          <label style="font-weight:700; font-size:0.85rem; color:var(--text-secondary); margin:0; background:none; padding:0;">Custom Section Content</label>
+          <span>Words: <span class="para-word-count ${blockColorClass}">${blockWords}</span> / ${blockMinWords}–${blockMaxWords}</span>
+        </div>
+        <textarea rows="8" style="font-family: 'Times New Roman', serif; font-size: 0.95rem; line-height: 1.4; width:100%;" placeholder="Paste or type your custom section content here. Separate paragraphs with a blank line (double enter)." oninput="updateCustomBlockText('${chKey}', ${secIdx}, this.value)">${sec.customBlockText || ''}</textarea>
+      `;
+      inputsCol.appendChild(blockContainer);
+
+      // Paragraphs & Bullets Container (Standard Mode)
+      const standardContainer = document.createElement('div');
+      standardContainer.style.display = sec.useCustomBlock ? 'none' : 'flex';
+      standardContainer.style.flexDirection = 'column';
+      standardContainer.style.gap = '1rem';
+
+      // Paragraphs Label
+      const parasLabel = document.createElement('label');
+      parasLabel.textContent = "Paragraphs";
+      parasLabel.style.fontWeight = '700';
+      parasLabel.style.fontSize = '0.85rem';
+      parasLabel.style.color = 'var(--text-secondary)';
+      standardContainer.appendChild(parasLabel);
+
+      const parasContainer = document.createElement('div');
+      parasContainer.style.display = 'flex';
+      parasContainer.style.flexDirection = 'column';
+      parasContainer.style.gap = '0.8rem';
+
+      (sec.paragraphs || []).forEach((para, paraIdx) => {
+        const paraDiv = document.createElement('div');
+        paraDiv.style.display = 'flex';
+        paraDiv.style.flexDirection = 'column';
+        paraDiv.style.gap = '4px';
+        paraDiv.style.width = '100%';
+
+        const countId = `wordcount-${chKey}-${secIdx}-${paraIdx}`;
+        const words = countWords(para);
+        let colorClass = 'info';
+        if (words >= minWords && words <= maxWords) colorClass = 'success';
+        else if (words > maxWords) colorClass = 'warning';
+
+        paraDiv.innerHTML = `
+          <div class="para-recommendation-badge" id="${countId}">
+            <span>Paragraph ${paraIdx + 1}</span>
+            <span>Words: <span class="para-word-count ${colorClass}">${words}</span> / ${minWords}–${maxWords}</span>
+          </div>
+          <div style="display:flex; gap:8px; align-items:flex-start; width:100%;">
+            <textarea id="textarea-${chKey}-${secIdx}-${paraIdx}" rows="4" style="flex:1; font-family: 'Times New Roman', serif; font-size: 0.95rem; line-height: 1.4;" oninput="updateCustomParagraph('${chKey}', ${secIdx}, ${paraIdx}, this.value)">${para}</textarea>
+            <button class="btn-chapter btn-chapter-secondary" style="padding: 0.65rem; color: var(--error); border-color: var(--error); align-self: stretch; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; width: 42px;" title="Delete Paragraph" onclick="deleteCustomParagraph('${chKey}', ${secIdx}, ${paraIdx})">🗑</button>
+          </div>
+        `;
+        parasContainer.appendChild(paraDiv);
+      });
+
+      const addParaBtn = document.createElement('button');
+      addParaBtn.className = 'btn-chapter btn-chapter-secondary';
+      addParaBtn.style.alignSelf = 'flex-start';
+      addParaBtn.textContent = '+ Add Paragraph';
+      addParaBtn.onclick = () => addCustomParagraph(chKey, secIdx);
+
+      standardContainer.appendChild(parasContainer);
+      standardContainer.appendChild(addParaBtn);
+
+      // Bullets (if any exist)
+      if (sec.bullets) {
+        const bulletsLabel = document.createElement('label');
+        bulletsLabel.textContent = "Bullet Points";
+        bulletsLabel.style.fontWeight = '700';
+        bulletsLabel.style.fontSize = '0.85rem';
+        bulletsLabel.style.color = 'var(--text-secondary)';
+        bulletsLabel.style.marginTop = '0.5rem';
+        standardContainer.appendChild(bulletsLabel);
+
+        const bulletsContainer = document.createElement('div');
+        bulletsContainer.style.display = 'flex';
+        bulletsContainer.style.flexDirection = 'column';
+        bulletsContainer.style.gap = '0.8rem';
+
+        (sec.bullets || []).forEach((bulletVal, bulIdx) => {
+          const bulDiv = document.createElement('div');
+          bulDiv.style.display = 'flex';
+          bulDiv.style.gap = '8px';
+          bulDiv.style.alignItems = 'center';
+
+          bulDiv.innerHTML = `
+            <input type="text" style="flex:1; font-family: 'Times New Roman', serif; font-size: 0.95rem;" value="${bulletVal}" oninput="updateCustomBullet('${chKey}', ${secIdx}, ${bulIdx}, this.value)" />
+            <button class="btn-chapter btn-chapter-secondary" style="padding: 0.5rem; color: var(--error); border-color: var(--error); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; width: 42px; height: 38px;" title="Delete Bullet" onclick="deleteCustomBullet('${chKey}', ${secIdx}, ${bulIdx})">🗑</button>
+          `;
+          bulletsContainer.appendChild(bulDiv);
+        });
+
+        const addBulBtn = document.createElement('button');
+        addBulBtn.className = 'btn-chapter btn-chapter-secondary';
+        addBulBtn.style.alignSelf = 'flex-start';
+        addBulBtn.textContent = '+ Add Bullet Point';
+        addBulBtn.onclick = () => addCustomBullet(chKey, secIdx);
+
+        standardContainer.appendChild(bulletsContainer);
+        standardContainer.appendChild(addBulBtn);
+      }
+
+      inputsCol.appendChild(standardContainer);
+      
+      // Right side Visual Page Preview
+      previewCol.innerHTML = `
+        <div class="mini-page-title">Page Space</div>
+        <div class="mini-page-container" id="minipage-container-${chKey}-${secIdx}">
+          <div style="display:flex; flex-direction:column; gap:2.2px; width:100%;" id="minipage-lines-${chKey}-${secIdx}">
+            <!-- lines injected dynamically -->
+          </div>
+          <div class="mini-page-badge" id="minipage-page-${chKey}-${secIdx}">P. 7</div>
+        </div>
+        <div class="mini-page-percent" id="minipage-percent-${chKey}-${secIdx}">0% filled</div>
+      `;
+
+      flexContainer.appendChild(inputsCol);
+      flexContainer.appendChild(previewCol);
+      secDiv.appendChild(flexContainer);
+      container.appendChild(secDiv);
+    });
+
+    // Run first-pass calculations to populate miniature page layout
+    refreshChapterVisuals(chKey);
+  }
+
+  function getChapterStartPages() {
+    const budgetVal = calculatePageBudget(parseInt(appState.totalPages) || 32);
+    const domainData = domainDatabase[appState.selectedDomain] || defaultDomainData;
+    const certBullets = (domainData.certBullets || []).map(b => fillPlaceholders(b, appState));
+    const references = ((appState.references && appState.references.length > 0) ? appState.references : (domainData.references || []))
+      .map(r => cleanReferenceLeadingNumber(fillPlaceholders(r, appState)));
+    const dailyActivities = (appState.dailyActivities || []).map(act => ({
+      day: act.day,
+      title: act.title,
+      activity: act.activity,
+      hours: act.hours || 4
+    }));
+    
+    const chapters = {};
+    const chaptersSource = appState.customChapters || domainData.chapters || {};
+    Object.keys(chaptersSource).forEach(chKey => {
+      chapters[chKey] = (chaptersSource[chKey] || []).map(sec => {
+        const heading = fillPlaceholders(sec.heading, appState);
+        let paragraphs = [];
+        let bullets = [];
+        if (sec.useCustomBlock) {
+          const rawParas = (sec.customBlockText || '').split(/\n\s*\n/);
+          paragraphs = rawParas.map(p => fillPlaceholders(p.trim(), appState)).filter(p => p.length > 0);
+          bullets = [];
+        } else {
+          paragraphs = (sec.paragraphs || []).map(p => fillPlaceholders(p, appState));
+          bullets = (sec.bullets || []).map(b => fillPlaceholders(b, appState));
+        }
+        return { heading, paragraphs, bullets };
+      });
+    });
+
+    const startPages = {};
+    startPages.cover = 1;
+    startPages.bonafide = 2;
+    startPages.companyCert = 3;
+    startPages.declaration = 4;
+    startPages.acknowledgement = 5;
+    startPages.toc = 6;
+    
+    let currentPage = 7;
+    
+    startPages.ch1 = currentPage;
+    currentPage += estimateChapterPages(chapters.ch1, { isCh1: true });
+    
+    startPages.ch2 = currentPage;
+    currentPage += estimateChapterPages(chapters.ch2);
+    
+    startPages.ch3 = currentPage;
+    currentPage += estimateChapterPages(chapters.ch3, { isCh3: true, dailyActivities: dailyActivities });
+    
+    startPages.ch4 = currentPage;
+    currentPage += estimateChapterPages(chapters.ch4);
+    
+    startPages.ch5 = currentPage;
+    currentPage += estimateChapterPages(chapters.ch5);
+    
+    startPages.ch6 = currentPage;
+    currentPage += estimateChapterPages(chapters.ch6);
+    
+    startPages.references = currentPage;
+    return startPages;
+  }
+
+  function refreshChapterVisuals(chKey) {
+    const startPages = getChapterStartPages();
+    const chStartPage = startPages[chKey] || 7;
+    
+    const budgetVal = calculatePageBudget(parseInt(appState.totalPages) || 32);
+    const chBudget = budgetVal.budget[chKey] || 2;
+    const sections = appState.customChapters[chKey] || [];
+    const sectionsCount = sections.length;
+    
+    let totalTargetLines = chBudget * 36;
+    let availableLines = totalTargetLines - 1.5 - sectionsCount * 1.2;
+    if (chKey === 'ch1') availableLines -= 10;
+    
+    let totalBulletsCount = 0;
+    sections.forEach(sec => {
+      if (sec.bullets) totalBulletsCount += sec.bullets.length;
+    });
+    let remainingLinesForParas = availableLines - totalBulletsCount * 1.5;
+    
+    let totalParasCount = 0;
+    sections.forEach(sec => {
+      totalParasCount += (sec.paragraphs || []).length;
+    });
+    if (totalParasCount === 0) totalParasCount = 1;
+    
+    let targetLinesPerPara = remainingLinesForParas / totalParasCount;
+    if (targetLinesPerPara < 3) targetLinesPerPara = 3;
+    let targetWordsPerPara = Math.round(targetLinesPerPara * 13.5);
+    let minWords = Math.max(50, Math.round(targetWordsPerPara * 0.85));
+    let maxWords = Math.round(targetWordsPerPara * 1.15);
+    if (minWords < 120) {
+      minWords = 120;
+      maxWords = 200;
+    }
+    
+    let currentLineOffset = 1.5;
+    
+    sections.forEach((sec, secIdx) => {
+      const sectionHeadingLines = 1.2;
+      let sectionLines = sectionHeadingLines;
+      
+      if (sec.useCustomBlock) {
+        const rawParas = (sec.customBlockText || '').split(/\n\s*\n/);
+        rawParas.forEach(p => {
+          const text = p.trim();
+          if (text.length > 0) {
+            sectionLines += Math.ceil(text.length / 95) + 0.44;
+          }
+        });
+      } else {
+        (sec.paragraphs || []).forEach(p => {
+          sectionLines += Math.ceil(p.length / 95) + 0.44;
+        });
+      }
+      
+      if (sec.bullets) {
+        sec.bullets.forEach(b => {
+          sectionLines += Math.ceil(b.length / 85) + 0.33;
+        });
+      }
+      
+      if (chKey === 'ch1' && sec.heading.includes("1.4")) {
+        sectionLines += 10;
+      }
+      
+      const secStartPage = chStartPage + Math.floor(currentLineOffset / 36);
+      
+      let targetSectionLines = (availableLines / sectionsCount) + sectionHeadingLines;
+      if (chKey === 'ch1' && sec.heading.includes("1.4")) {
+        targetSectionLines += 10;
+      }
+      
+      const fillPct = Math.round((sectionLines / targetSectionLines) * 100);
+      
+      const pageBadgeEl = document.getElementById(`minipage-page-${chKey}-${secIdx}`);
+      if (pageBadgeEl) {
+        pageBadgeEl.textContent = `P. ${secStartPage}`;
+      }
+      
+      const percentEl = document.getElementById(`minipage-percent-${chKey}-${secIdx}`);
+      if (percentEl) {
+        percentEl.textContent = `${fillPct}% filled`;
+        percentEl.className = 'mini-page-percent';
+        if (fillPct >= 80 && fillPct <= 110) {
+          percentEl.classList.add('filled');
+        } else if (fillPct > 110) {
+          percentEl.classList.add('warning');
+        } else {
+          percentEl.classList.add('underfilled');
+        }
+      }
+      
+      const containerEl = document.getElementById(`minipage-container-${chKey}-${secIdx}`);
+      if (containerEl) {
+        if (fillPct > 115) {
+          containerEl.style.borderColor = 'var(--error)';
+        } else if (fillPct >= 80 && fillPct <= 110) {
+          containerEl.style.borderColor = 'var(--success)';
+        } else {
+          containerEl.style.borderColor = '#cbd5e1';
+        }
+      }
+      
+      const linesContainer = document.getElementById(`minipage-lines-${chKey}-${secIdx}`);
+      if (linesContainer) {
+        linesContainer.innerHTML = '';
+        const totalSimLines = 14;
+        const filledSimLines = Math.min(totalSimLines, Math.max(0, Math.round((sectionLines / targetSectionLines) * totalSimLines)));
+        for (let l = 0; l < totalSimLines; l++) {
+          const lineDiv = document.createElement('div');
+          lineDiv.className = 'mini-page-line';
+          if (l < filledSimLines) {
+            if (fillPct > 115 && l >= Math.round(totalSimLines * 0.85)) {
+              lineDiv.className = 'mini-page-line overflow';
+            } else {
+              lineDiv.className = 'mini-page-line filled';
+            }
+          }
+          linesContainer.appendChild(lineDiv);
+        }
+      }
+      
+      if (sec.useCustomBlock) {
+        const words = countWords(sec.customBlockText || '');
+        const targetWords = targetWordsPerPara * (sec.paragraphs || []).length;
+        const sectionMinWords = Math.max(100, Math.round(targetWords * 0.85));
+        const sectionMaxWords = Math.round(targetWords * 1.15);
+        updateWordCountBadgeDOM(`wordcount-block-${chKey}-${secIdx}`, words, sectionMinWords, sectionMaxWords);
+      } else {
+        (sec.paragraphs || []).forEach((paraText, paraIdx) => {
+          const words = countWords(paraText);
+          updateWordCountBadgeDOM(`wordcount-${chKey}-${secIdx}-${paraIdx}`, words, minWords, maxWords);
+        });
+      }
+      
+      currentLineOffset += sectionLines;
+    });
+  }
+
+  function countWords(str) {
+    if (!str || str.trim() === '') return 0;
+    return str.trim().split(/\s+/).length;
+  }
+
+  function updateWordCountBadgeDOM(elementId, words, minW, maxW) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    
+    el.innerHTML = `Words: <span class="para-word-count-num">${words}</span> / ${minW}–${maxW}`;
+    const numEl = el.querySelector('.para-word-count-num');
+    if (numEl) {
+      numEl.className = 'para-word-count';
+      if (words >= minW && words <= maxW) {
+        numEl.classList.add('success');
+      } else if (words > maxW) {
+        numEl.classList.add('warning');
+      } else {
+        numEl.classList.add('info');
+      }
+    }
+  }
+
+  function updateCustomReferences(val) {
+    const lines = val.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    appState.references = lines;
+    saveAppState();
+  }
+
+  function toggleSectionEditorMode(chKey, secIdx, checked) {
+    initCustomChapters();
+    appState.customChapters[chKey][secIdx].useCustomBlock = checked;
+    if (checked && !appState.customChapters[chKey][secIdx].customBlockText) {
+      appState.customChapters[chKey][secIdx].customBlockText = (appState.customChapters[chKey][secIdx].paragraphs || []).join('\n\n');
+    }
+    saveAppState();
+    renderCustomChapterEditor();
+  }
+
+  function updateCustomBlockText(chKey, secIdx, val) {
+    initCustomChapters();
+    appState.customChapters[chKey][secIdx].customBlockText = val;
+    
+    if (chKey === 'ch4' && !appState.noProject) {
+      const inputIdMap = { 0: 'projectTitle', 1: 'problemStatement', 2: 'projectObjective', 4: 'methodology' };
+      const fieldKey = inputIdMap[secIdx];
+      if (fieldKey) {
+        appState[fieldKey] = val;
+        const el = document.getElementById(fieldKey);
+        if (el) el.value = val;
+        if (appState.customChapters[chKey][secIdx].paragraphs) {
+          appState.customChapters[chKey][secIdx].paragraphs[0] = val;
+        }
+      }
+    }
+    
+    saveAppState();
+    refreshChapterVisuals(chKey);
+  }
+
+  function updateCustomSectionHeading(chKey, secIdx, val) {
+    initCustomChapters();
+    appState.customChapters[chKey][secIdx].heading = val;
+    saveAppState();
+    refreshChapterVisuals(chKey);
+  }
+
+  function updateCustomParagraph(chKey, secIdx, paraIdx, val) {
+    initCustomChapters();
+    appState.customChapters[chKey][secIdx].paragraphs[paraIdx] = val;
+    
+    if (chKey === 'ch4' && !appState.noProject) {
+      const inputIdMap = { 0: 'projectTitle', 1: 'problemStatement', 2: 'projectObjective', 4: 'methodology' };
+      const fieldKey = inputIdMap[secIdx];
+      if (fieldKey && paraIdx === 0) {
+        appState[fieldKey] = val;
+        const el = document.getElementById(fieldKey);
+        if (el) el.value = val;
+        appState.customChapters[chKey][secIdx].customBlockText = val;
+      }
+    }
+    
+    saveAppState();
+    refreshChapterVisuals(chKey);
+  }
+
+  function addCustomParagraph(chKey, secIdx) {
+    initCustomChapters();
+    appState.customChapters[chKey][secIdx].paragraphs.push('');
+    saveAppState();
+    renderCustomChapterEditor();
+  }
+
+  function deleteCustomParagraph(chKey, secIdx, paraIdx) {
+    initCustomChapters();
+    appState.customChapters[chKey][secIdx].paragraphs.splice(paraIdx, 1);
+    saveAppState();
+    renderCustomChapterEditor();
+  }
+
+  function updateCustomBullet(chKey, secIdx, bulIdx, val) {
+    initCustomChapters();
+    appState.customChapters[chKey][secIdx].bullets[bulIdx] = val;
+    saveAppState();
+    refreshChapterVisuals(chKey);
+  }
+
+  function addCustomBullet(chKey, secIdx) {
+    initCustomChapters();
+    if (!appState.customChapters[chKey][secIdx].bullets) {
+      appState.customChapters[chKey][secIdx].bullets = [];
+    }
+    appState.customChapters[chKey][secIdx].bullets.push('');
+    saveAppState();
+    renderCustomChapterEditor();
+  }
+
+  function deleteCustomBullet(chKey, secIdx, bulIdx) {
+    initCustomChapters();
+    appState.customChapters[chKey][secIdx].bullets.splice(bulIdx, 1);
+    saveAppState();
+    renderCustomChapterEditor();
+  }
+
+  function resetCustomChaptersToDefault() {
+    if (confirm("Are you sure you want to reset your customized chapters back to the domain defaults? All your manual edits to chapters will be lost.")) {
+      const domainData = domainDatabase[appState.selectedDomain] || defaultDomainData;
+      const rawChapters = JSON.parse(JSON.stringify(domainData.chapters));
+      Object.keys(rawChapters).forEach(chKey => {
+        rawChapters[chKey].forEach(sec => {
+          sec.useCustomBlock = false;
+          sec.customBlockText = (sec.paragraphs || []).join('\n\n');
+        });
+      });
+      appState.customChapters = rawChapters;
+      appState.customChaptersDomain = appState.selectedDomain;
+      saveAppState();
+      renderCustomChapterEditor();
+      showToast("↺ Customized chapters reset to default");
+      addLog("Reset customized chapters to domain defaults.", "info");
+    }
+  }
+
+  // Dynamic Daily Log Grid Builder
+  function generateDailyLogInputs() {
+    const tableBody = document.getElementById('dailyLogTableBody');
+    if (!tableBody) return;
+    tableBody.innerHTML = '';
+
+    const numDays = parseInt(appState.numDays) || 26;
+    const existingActivities = appState.dailyActivities || [];
+
+    for (let d = 1; d <= numDays; d++) {
+      const tr = document.createElement('tr');
+      const existing = existingActivities.find(item => item.day === d);
+      let titleVal = '';
+      let descVal = '';
+      let hoursVal = 4;
+
+      if (existing === undefined) {
+        const domainData = domainDatabase[appState.selectedDomain];
+        if (domainData && domainData.dailyActivities) {
+          const defaultAct = domainData.dailyActivities[(d - 1) % domainData.dailyActivities.length] || {};
+          titleVal = fillPlaceholders(defaultAct.title, appState);
+          descVal = fillPlaceholders(defaultAct.activity, appState);
+          if (defaultAct.hours !== undefined) {
+            hoursVal = defaultAct.hours;
+          }
+        }
+      } else {
+        titleVal = existing.title || '';
+        descVal = existing.activity || '';
+        hoursVal = existing.hours !== undefined ? existing.hours : 4;
+      }
+
+      tr.innerHTML = `
+        <td class="daily-row-day">Day ${d}</td>
+        <td class="daily-row-title">
+          <input type="text" id="day-title-${d}" oninput="saveAppState()" value="${titleVal}" placeholder="e.g. System Overview" />
+        </td>
+        <td class="daily-row-activity">
+          <textarea id="day-desc-${d}" rows="2" oninput="saveAppState()" placeholder="e.g. Conducted basic checks...">${descVal}</textarea>
+        </td>
+        <td class="daily-row-hours">
+          <input type="number" min="1" max="24" id="day-hours-${d}" oninput="saveAppState()" value="${hoursVal}" placeholder="4" />
+        </td>
+      `;
+      tableBody.appendChild(tr);
+    }
+  }
+
+  function resetDailyLogsToDefault() {
+    if (confirm("Are you sure you want to reset the daily log entries to the default values for the selected domain? This will overwrite your manual edits.")) {
+      const domainData = domainDatabase[appState.selectedDomain];
+      if (domainData && domainData.dailyActivities) {
+        appState.dailyActivities = [];
+        generateDailyLogInputs();
+        saveAppState();
+        updateUI();
+        showToast("↺ Daily logs reset to default");
+        addLog("Reset daily logs to domain defaults.", "info");
+      }
+    }
+  }
+
+  function onNumDaysChanged() {
+    saveAppState();
+    generateDailyLogInputs();
+    updateUI();
+  }
+
+  // Page Budget Algorithm
+  function calculatePageBudget(totalPages) {
+    const prelimPages = 6;
+    let remaining = totalPages - prelimPages;
+    if (remaining < 10) {
+      remaining = 10;
+    }
+    
+    const refAppendicesPages = 2;
+    let bodyPages = remaining - refAppendicesPages;
+    
+    let ch1 = Math.max(2, Math.round(bodyPages * 0.13));
+    let ch2 = Math.max(3, Math.round(bodyPages * 0.18));
+    let ch3 = Math.max(4, Math.round(bodyPages * 0.30));
+    let ch4 = Math.max(4, Math.round(bodyPages * 0.25));
+    let ch5 = Math.max(2, Math.round(bodyPages * 0.10));
+    let ch6 = Math.max(2, bodyPages - (ch1 + ch2 + ch3 + ch4 + ch5));
+    
+    if (ch6 < 2) {
+      ch6 = 2;
+    }
+
+    let sum = ch1 + ch2 + ch3 + ch4 + ch5 + ch6;
+    let diff = bodyPages - sum;
+    if (diff !== 0) {
+      ch3 += diff;
+    }
+    
+    const startPages = {
+      cover: 1,
+      bonafide: 2,
+      companyCert: 3,
+      declaration: 4,
+      acknowledgement: 5,
+      toc: 6,
+      ch1: 7,
+      ch2: 7 + ch1,
+      ch3: 7 + ch1 + ch2,
+      ch4: 7 + ch1 + ch2 + ch3,
+      ch5: 7 + ch1 + ch2 + ch3 + ch4,
+      ch6: 7 + ch1 + ch2 + ch3 + ch4 + ch5,
+      references: 7 + ch1 + ch2 + ch3 + ch4 + ch5 + ch6,
+      appendices: 7 + ch1 + ch2 + ch3 + ch4 + ch5 + ch6 + 1
+    };
+    
+    return {
+      budget: { ch1, ch2, ch3, ch4, ch5, ch6, ref: 1, app: 1 },
+      startPages,
+      prelimPages
+    };
+  }
+
+  function updateUI() {
+    saveAppState();
+
+    // Update cover page preview
+    document.getElementById('prev-collegeName').textContent = appState.collegeName.toUpperCase() || 'COLLEGE NAME';
+    document.getElementById('prev-collegeLocation').textContent = appState.collegeLocation || 'Location';
+    document.getElementById('prev-universityName').textContent = `Affiliated to ${appState.universityName}` || '';
+    document.getElementById('prev-universityNameSub').textContent = appState.universityName || 'University';
+    document.getElementById('prev-domain').textContent = appState.internshipDomain.toUpperCase() || 'INTERNSHIP DOMAIN';
+    document.getElementById('prev-companyName').textContent = appState.companyName.toUpperCase() || 'COMPANY NAME';
+    document.getElementById('prev-course').textContent = appState.course || '';
+    document.getElementById('prev-studentName').textContent = appState.studentName || '—';
+    document.getElementById('prev-registerNumber').textContent = appState.registerNumber || '—';
+    document.getElementById('prev-apaarId').textContent = appState.apaarId || '—';
+    document.getElementById('prev-guideName').textContent = `${appState.facultyGuideName} (${appState.facultyGuideDesignation})` || '—';
+    document.getElementById('prev-department').textContent = appState.department || '—';
+    document.getElementById('prev-year').textContent = appState.academicYear.split('–')[1] || appState.academicYear.split('-')[1] || appState.academicYear || '2026';
+
+    const { budget, prelimPages } = calculatePageBudget(parseInt(appState.totalPages) || 32);
+
+    // Build visualizer
+    const colors = {
+      prelim: '#475569',
+      ch1: '#3b82f6',
+      ch2: '#10b981',
+      ch3: '#8b5cf6',
+      ch4: '#f59e0b',
+      ch5: '#ec4899',
+      ch6: '#14b8a6',
+      refApp: '#64748b'
+    };
+
+    const visualBar = document.getElementById('budgetBar');
+    if (visualBar) {
+      visualBar.innerHTML = '';
+      const totalPages = parseInt(appState.totalPages) || 32;
+      addSegment((prelimPages / totalPages) * 100, colors.prelim, `Prelim Pages: ${prelimPages} pages`);
+      addSegment((budget.ch1 / totalPages) * 100, colors.ch1, `Ch1: ${budget.ch1} pages`);
+      addSegment((budget.ch2 / totalPages) * 100, colors.ch2, `Ch2: ${budget.ch2} pages`);
+      addSegment((budget.ch3 / totalPages) * 100, colors.ch3, `Ch3: ${budget.ch3} pages`);
+      addSegment((budget.ch4 / totalPages) * 100, colors.ch4, `Ch4: ${budget.ch4} pages`);
+      addSegment((budget.ch5 / totalPages) * 100, colors.ch5, `Ch5: ${budget.ch5} pages`);
+      addSegment((budget.ch6 / totalPages) * 100, colors.ch6, `Ch6: ${budget.ch6} pages`);
+      addSegment(((budget.ref + budget.app) / totalPages) * 100, colors.refApp, `References/App: ${budget.ref + budget.app} pages`);
+    }
+
+    function addSegment(widthPct, color, title) {
+      const seg = document.createElement('div');
+      seg.className = 'budget-segment';
+      seg.style.width = `${widthPct}%`;
+      seg.style.backgroundColor = color;
+      seg.title = title;
+      visualBar.appendChild(seg);
+    }
+
+    const legend = document.getElementById('budgetLegend');
+    if (legend) {
+      legend.innerHTML = `
+        <div class="legend-item"><span class="legend-color" style="background:${colors.prelim}"></span><span>Prelim (${prelimPages}p)</span></div>
+        <div class="legend-item"><span class="legend-color" style="background:${colors.ch1}"></span><span>Ch1 (${budget.ch1}p)</span></div>
+        <div class="legend-item"><span class="legend-color" style="background:${colors.ch2}"></span><span>Ch2 (${budget.ch2}p)</span></div>
+        <div class="legend-item"><span class="legend-color" style="background:${colors.ch3}"></span><span>Ch3 (${budget.ch3}p)</span></div>
+        <div class="legend-item"><span class="legend-color" style="background:${colors.ch4}"></span><span>Ch4 (${budget.ch4}p)</span></div>
+        <div class="legend-item"><span class="legend-color" style="background:${colors.ch5}"></span><span>Ch5 (${budget.ch5}p)</span></div>
+        <div class="legend-item"><span class="legend-color" style="background:${colors.ch6}"></span><span>Ch6 (${budget.ch6}p)</span></div>
+        <div class="legend-item"><span class="legend-color" style="background:${colors.refApp}"></span><span>Ref/App (${budget.ref + budget.app}p)</span></div>
+      `;
+    }
+  }
+
+  // Dynamic guide pronoun helper
+  function getGuidePronoun(name) {
+    const cleanName = (name || '').trim().toLowerCase();
+    if (/^mr\b/i.test(cleanName)) return 'His';
+    if (/^m(s|rs|iss)\b/i.test(cleanName)) return 'Her';
+    if (/\bmr\b/i.test(cleanName)) return 'His';
+    if (/\bm(s|rs|iss)\b/i.test(cleanName)) return 'Her';
+    return 'His';
+  }
+
+  // Duration formatting helper
+  function formatDuration(duration, includeInternship = true) {
+    if (!duration) return "";
+    let clean = duration.trim();
+    clean = clean.replace(/(\d+)\s*days?/i, '$1-day');
+    if (includeInternship) {
+      if (!clean.toLowerCase().includes("internship")) {
+        clean += " Internship";
+      }
+    } else {
+      clean = clean.replace(/\s*internship/i, '');
+    }
+    return clean;
+  }
+
+  // Department name cleaning helper to prevent duplications
+  function cleanDepartmentName(dept) {
+    if (!dept) return '';
+    return dept
+      .replace(/^department\s+of\s+/i, '')
+      .replace(/^dept\.?\s+of\s+/i, '')
+      .replace(/^dept\.?\s+/i, '')
+      .trim();
+  }
+
+  // Template fill helper
+  function fillPlaceholders(text, state) {
+    if (!text) return '';
+    return text
+      .replace(/{studentName}/g, state.studentName || '')
+      .replace(/{registerNumber}/g, state.registerNumber || '')
+      .replace(/{apaarId}/g, state.apaarId || '')
+      .replace(/{course}/g, state.course || '')
+      .replace(/{courseCode}/g, state.courseCode || '')
+      .replace(/{semester}/g, state.semester || '')
+      .replace(/{academicYear}/g, state.academicYear || '')
+      .replace(/{collegeName}/g, state.collegeName || '')
+      .replace(/{department}/g, cleanDepartmentName(state.department) || '')
+      .replace(/{collegeLocation}/g, state.collegeLocation || '')
+      .replace(/{universityName}/g, state.universityName || '')
+      .replace(/{companyName}/g, state.companyName || '')
+      .replace(/{companyAddress}/g, state.companyAddress || '')
+      .replace(/{internshipDuration}/g, formatDuration(state.internshipDuration, false) || '')
+      .replace(/{mentorName}/g, state.mentorName || '')
+      .replace(/{facultyGuideName}/g, state.facultyGuideName || '')
+      .replace(/{facultyGuideDesignation}/g, state.facultyGuideDesignation || '')
+      .replace(/{projectTitle}/g, state.projectTitle || '')
+      .replace(/{problemStatement}/g, state.problemStatement || '')
+      .replace(/{projectObjective}/g, state.projectObjective || '')
+      .replace(/{projectDescription}/g, state.projectDescription || '')
+      .replace(/{technologiesUsed}/g, state.technologiesUsed || '')
+      .replace(/{programmingLanguages}/g, state.programmingLanguages || '')
+      .replace(/{toolsUsed}/g, state.toolsUsed || '')
+      .replace(/{datasetUsed}/g, state.datasetUsed || '')
+      .replace(/{methodology}/g, state.methodology || '')
+      .replace(/{internshipDomain}/g, state.internshipDomain || '')
+      .replace(/{internshipTopic}/g, state.internshipTopic || '');
+  }
+
+  function cleanReferenceLeadingNumber(ref) {
+    if (!ref) return '';
+    return ref.replace(/^\s*\d+[\.\:\)\-]\s*/, '').replace(/^\s*\[\d+\]\s*/, '').trim();
+  }
+
+  // Backward compatibility stubs for unit tests
+  function generateOfflineData(id) {
+    const domainData = domainDatabase[appState.selectedDomain] || defaultDomainData;
+    if (id === 'abbreviations') {
+      return (domainData.abbreviations || []).map(ab => ({
+        abbreviation: ab.abbreviation,
+        fullForm: fillPlaceholders(ab.fullForm, appState)
+      }));
+    }
+    if (id === 'certBullets') {
+      return (domainData.certBullets || []).map(b => fillPlaceholders(b, appState));
+    }
+    if (id === 'references') {
+      const currentRefs = (appState.references && appState.references.length > 0) ? appState.references : (domainData.references || []);
+      return currentRefs.map(r => cleanReferenceLeadingNumber(fillPlaceholders(r, appState)));
+    }
+    if (id.startsWith('ch')) {
+      const secs = (appState.customChapters && appState.customChapters[id]) || domainData.chapters[id] || [];
+      return secs.map(s => {
+        const heading = fillPlaceholders(s.heading, appState);
+        let paragraphs = [];
+        let bullets = [];
+        if (s.useCustomBlock) {
+          const rawParas = (s.customBlockText || '').split(/\n\s*\n/);
+          paragraphs = rawParas.map(p => fillPlaceholders(p.trim(), appState)).filter(p => p.length > 0);
+          bullets = [];
+        } else {
+          paragraphs = (s.paragraphs || []).map(p => fillPlaceholders(p, appState));
+          bullets = (s.bullets || []).map(b => fillPlaceholders(b, appState));
+        }
+        return { heading, paragraphs, bullets };
+      });
+    }
+    return [];
+  }
+
+  function generateOfflineActivities(domain, topic, days) {
+    const domainData = domainDatabase[appState.selectedDomain] || defaultDomainData;
+    const activities = domainData.dailyActivities || [];
+    const list = [];
+    for (let d = 1; d <= days; d++) {
+      const defaultAct = activities[(d - 1) % activities.length] || {};
+      list.push({
+        day: d,
+        title: fillPlaceholders(defaultAct.title, appState),
+        activity: fillPlaceholders(defaultAct.activity, appState),
+        hours: defaultAct.hours || 4
+      });
+    }
+    return list;
+  }
+
+  // Estimate page count of a chapter based on its content length
+  function estimateChapterPages(sections, options = {}) {
+    let lines = 0;
+    lines += 1.5; // H1 spacing
+    
+    (sections || []).forEach(sec => {
+      lines += 1.2; // H2 spacing
+      (sec.paragraphs || []).forEach(p => {
+        lines += Math.ceil(p.length / 95) + 0.44;
+      });
+      (sec.bullets || []).forEach(b => {
+        lines += Math.ceil(b.length / 85) + 0.33;
+      });
+      if (options.isCh1 && sec.heading.includes("1.4")) {
+        lines += 10; // parameters table
+      }
+    });
+
+    if (options.isCh3 && options.dailyActivities && options.dailyActivities.length) {
+      // Chapter 3 narrative page estimation
+      const narrativePages = Math.ceil(lines / 36);
+      
+      // Chapter 3 table page estimation
+      let tableLines = 2; // header row
+      options.dailyActivities.forEach(act => {
+        const titleLines = Math.ceil((act.title || '').length / 25);
+        const activityLines = Math.ceil((act.activity || '').length / 54);
+        tableLines += Math.max(1, titleLines, activityLines) + 0.2;
+      });
+      const tablePages = Math.ceil(tableLines / 36);
+      return narrativePages + tablePages;
+    }
+    
+    return Math.ceil(lines / 36);
+  }
+
+  // Main compilation trigger
+  async function assembleReportDocx() {
+    saveAppState();
+    
+    const domainData = domainDatabase[appState.selectedDomain];
+    if (!domainData) {
+      alert("Selected domain data is missing!");
+      return;
+    }
+    
+    addLog("Assembling report document using template engine...", "info");
+    
+    const certBullets = (domainData.certBullets || []).map(b => fillPlaceholders(b, appState));
+    const references = ((appState.references && appState.references.length > 0) ? appState.references : (domainData.references || []))
+      .map(r => cleanReferenceLeadingNumber(fillPlaceholders(r, appState)));
+    const dailyActivities = (appState.dailyActivities || []).map(act => ({
+      day: act.day,
+      title: act.title,
+      activity: act.activity,
+      hours: act.hours || 4
+    }));
+    
+    const chapters = {};
+    const chaptersSource = appState.customChapters || domainData.chapters || {};
+    Object.keys(chaptersSource).forEach(chKey => {
+      chapters[chKey] = (chaptersSource[chKey] || []).map(sec => {
+        const heading = fillPlaceholders(sec.heading, appState);
+        let paragraphs = [];
+        let bullets = [];
+        if (sec.useCustomBlock) {
+          const rawParas = (sec.customBlockText || '').split(/\n\s*\n/);
+          paragraphs = rawParas.map(p => fillPlaceholders(p.trim(), appState)).filter(p => p.length > 0);
+          bullets = [];
+        } else {
+          paragraphs = (sec.paragraphs || []).map(p => fillPlaceholders(p, appState));
+          bullets = (sec.bullets || []).map(b => fillPlaceholders(b, appState));
+        }
+        return { heading, paragraphs, bullets };
+      });
+    });
+
+    const budgetVal = calculatePageBudget(appState.totalPages || 32);
+    
+    // Calculate dynamic starting page numbers based on actual content length
+    const startPages = {};
+    startPages.cover = 1;
+    startPages.bonafide = 2;
+    startPages.companyCert = 3;
+    startPages.declaration = 4;
+    startPages.acknowledgement = 5;
+    startPages.toc = 6;
+    
+    let currentPage = 7; // Chapter 1 starts on Page 7
+    
+    startPages.ch1 = currentPage;
+    currentPage += estimateChapterPages(chapters.ch1, { isCh1: true });
+    
+    startPages.ch2 = currentPage;
+    currentPage += estimateChapterPages(chapters.ch2);
+    
+    startPages.ch3 = currentPage;
+    currentPage += estimateChapterPages(chapters.ch3, { isCh3: true, dailyActivities: dailyActivities });
+    
+    startPages.ch4 = currentPage;
+    currentPage += estimateChapterPages(chapters.ch4);
+    
+    startPages.ch5 = currentPage;
+    currentPage += estimateChapterPages(chapters.ch5);
+    
+    startPages.ch6 = currentPage;
+    currentPage += estimateChapterPages(chapters.ch6);
+    
+    startPages.references = currentPage;
+    const refCount = references.length;
+    const refLines = 2 + refCount * 1.5;
+    currentPage += Math.max(1, Math.ceil(refLines / 36));
+    
+    startPages.appendices = currentPage;
+    
+    budgetVal.startPages = startPages;
+    
+    const docData = {
+      student: { ...appState },
+      budget: budgetVal,
+      abbreviations: [],
+      certBullets,
+      ch1: chapters.ch1 || [],
+      ch2: chapters.ch2 || [],
+      ch3: chapters.ch3 || [],
+      ch4: chapters.ch4 || [],
+      ch5: chapters.ch5 || [],
+      ch6: chapters.ch6 || [],
+      dailyActivities,
+      references
+    };
+    
+    try {
+      addLog("Compiling final Word Document (.docx) based on format criteria...", "info");
+      buildDocxFile(docData);
+      addLog("✓ Report generated and download started successfully!", "success");
+      showToast("✓ Report generated successfully!");
+    } catch (err) {
+      console.error(err);
+      addLog("Error generating report: " + err.message, "error");
+      alert("Failed to build report: " + err.message);
+    }
+  }
+
+  // Assemble DOCX using UMD docx library (strictly formatted based on Kerala University Summer Internship Guidelines)
+  function buildDocxFile(data) {
+    const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+            AlignmentType, BorderStyle, WidthType, ShadingType, HeadingLevel,
+            LevelFormat, Header, Footer, PageNumber } = window.docx;
+
+    const S = data.student;
+    const B = data.budget;
+
+    function formatDateRange(startStr, endStr) {
+      if (!startStr || !endStr) return "April 23 to May 20, 2026";
+      const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      
+      const start = new Date(startStr);
+      const end = new Date(endStr);
+      
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        return `${startStr} to ${endStr}`;
+      }
+      
+      const startDay = start.getDate();
+      const startMonth = months[start.getMonth()];
+      const startYear = start.getFullYear();
+      
+      const endDay = end.getDate();
+      const endMonth = months[end.getMonth()];
+      const endYear = end.getFullYear();
+      
+      if (startYear === endYear) {
+        if (startMonth === endMonth) {
+          return `${startMonth} ${startDay} to ${endDay}, ${startYear}`;
+        } else {
+          return `${startMonth} ${startDay} to ${endMonth} ${endDay}, ${startYear}`;
+        }
+      } else {
+        return `${startMonth} ${startDay}, ${startYear} to ${endMonth} ${endDay}, ${endYear}`;
+      }
+    }
+
+    function pWithRuns(runs, align = AlignmentType.JUSTIFIED, size = 24, spacing = { before: 80, after: 80, line: 360 }) {
+      return new Paragraph({
+        alignment: align,
+        spacing: spacing,
+        children: runs.map(run => {
+          if (typeof run === 'string') {
+            return new TextRun({ text: run, font: 'Times New Roman', size, color: C.text });
+          }
+          return new TextRun({
+            text: run.text,
+            bold: run.bold || false,
+            italic: run.italic || false,
+            font: 'Times New Roman',
+            size: run.size || size,
+            color: run.color || C.text
+          });
+        })
+      });
+    }
+
+    const C = {
+      navy: '1F3864',
+      blue: '2E5FA3',
+      border: 'D3D3D3',
+      text: '000000',
+      grey: '595959'
+    };
+
+    const thinBorder = { style: BorderStyle.SINGLE, size: 4, color: C.border };
+    const allThin = { top: thinBorder, bottom: thinBorder, left: thinBorder, right: thinBorder };
+    const noBorder = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
+    const noAllBorder = { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder };
+
+    function makeCell(text, bold = false, fill = 'FFFFFF', align = AlignmentType.LEFT, width = 4680) {
+      return new TableCell({
+        width: { size: width, type: WidthType.DXA },
+        borders: allThin,
+        shading: { fill, type: ShadingType.CLEAR },
+        margins: { top: 120, bottom: 120, left: 160, right: 160 },
+        children: [new Paragraph({
+          alignment: align,
+          children: [new TextRun({ text, bold, font: 'Times New Roman', size: 24, color: C.text })]
+        })]
+      });
+    }
+
+    function H1(text) {
+      return new Paragraph({
+        heading: HeadingLevel.HEADING_1,
+        spacing: { before: 240, after: 120 },
+        pageBreakBefore: true,
+        keepWithNext: true,
+        children: [new TextRun({ text, bold: true, size: 32, font: 'Times New Roman', color: C.navy })]
+      });
+    }
+
+    function H2(text) {
+      return new Paragraph({
+        heading: HeadingLevel.HEADING_2,
+        spacing: { before: 180, after: 90 },
+        keepWithNext: true,
+        children: [new TextRun({ text, bold: true, size: 28, font: 'Times New Roman', color: C.blue })]
+      });
+    }
+
+    function p(text, bold = false, italic = false, align = AlignmentType.JUSTIFIED, size = 24, spacing = { before: 80, after: 80, line: 360 }) {
+      return new Paragraph({
+        alignment: align,
+        spacing: spacing,
+        children: [new TextRun({ text, bold, italic, size, font: 'Times New Roman', color: C.text })]
+      });
+    }
+
+    function bullet(text) {
+      return new Paragraph({
+        numbering: { reference: 'bullets', level: 0 },
+        spacing: { before: 60, after: 60, line: 360 },
+        alignment: AlignmentType.JUSTIFIED,
+        children: [new TextRun({ text, size: 24, font: 'Times New Roman', color: C.text })]
+      });
+    }
+
+    function listNumberedItem(text, instanceId) {
+      return new Paragraph({
+        numbering: { reference: 'numbered-list', level: 0, instance: instanceId },
+        spacing: { before: 60, after: 60, line: 360 },
+        alignment: AlignmentType.JUSTIFIED,
+        children: [new TextRun({ text, size: 24, font: 'Times New Roman', color: C.text })]
+      });
+    }
+
+    function blankLine(count = 1) {
+      const arr = [];
+      for (let i = 0; i < count; i++) {
+        arr.push(new Paragraph({ children: [new TextRun('')], spacing: { before: 60, after: 60 } }));
+      }
+      return arr;
+    }
+
+    function dividerLine() {
+      return new Paragraph({
+        border: { bottom: { style: BorderStyle.SINGLE, size: 12, color: C.navy, space: 4 } },
+        spacing: { before: 0, after: 200 },
+        children: []
+      });
+    }
+
+    function infoRow(label, value) {
+      return new TableRow({
+        cantSplit: true,
+        children: [
+          makeCell(label, true, 'FFFFFF', AlignmentType.LEFT, 2800),
+          makeCell(':', true, 'FFFFFF', AlignmentType.CENTER, 240),
+          makeCell(value, false, 'FFFFFF', AlignmentType.LEFT, 6320)
+        ]
+      });
+    }
+
+    // 1. COVER PAGE
+    const coverChildren = [
+      p(S.collegeName.toUpperCase(), true, false, AlignmentType.CENTER, 28, { before: 0, after: 20 }),
+      p(S.collegeLocation, false, false, AlignmentType.CENTER, 20, { before: 0, after: 20 }),
+      p(`Affiliated to ${S.universityName}`, false, true, AlignmentType.CENTER, 18, { before: 0, after: 200 }),
+      ...blankLine(2),
+      p("SUMMER INTERNSHIP REPORT", true, false, AlignmentType.CENTER, 32, { before: 0, after: 60 }),
+      p("ON", false, false, AlignmentType.CENTER, 22, { before: 0, after: 60 }),
+      p(S.internshipDomain.toUpperCase(), true, false, AlignmentType.CENTER, 28, { before: 0, after: 60 }),
+      p("AT", false, false, AlignmentType.CENTER, 22, { before: 0, after: 60 }),
+      p(S.companyName.toUpperCase(), true, false, AlignmentType.CENTER, 26, { before: 0, after: 200 }),
+      ...blankLine(2),
+      p(`Report Submitted to the ${S.universityName} in partial fulfillment of the requirements for the award of the degree of`, false, false, AlignmentType.CENTER, 22, { before: 0, after: 40 }),
+      p(S.course, true, false, AlignmentType.CENTER, 24, { before: 0, after: 200 }),
+      ...blankLine(2),
+      new Table({
+        width: { size: 9360, type: WidthType.DXA },
+        columnWidths: [2800, 240, 6320],
+        rows: [
+          infoRow('Submitted By', S.studentName),
+          infoRow('Register Number', S.registerNumber),
+          infoRow('APAAR ID', S.apaarId),
+          infoRow('Course Code', S.courseCode || 'UK4INTCSC200'),
+          infoRow('Project Guide', `${S.facultyGuideName} (${S.facultyGuideDesignation})`),
+          infoRow('Company Mentor', S.mentorName),
+          infoRow('Duration', formatDuration(S.internshipDuration, true)),
+          infoRow('Academic Year', S.academicYear)
+        ]
+      }),
+      ...blankLine(2),
+      dividerLine(),
+      p(`DEPARTMENT OF ${cleanDepartmentName(S.department).toUpperCase()}`, true, false, AlignmentType.CENTER, 20, { before: 0, after: 20 }),
+      p(S.collegeName, true, false, AlignmentType.CENTER, 20, { before: 0, after: 20 }),
+      p(S.academicYear.split('–')[1] || S.academicYear.split('-')[1] || S.academicYear || '2026', false, false, AlignmentType.CENTER, 20, { before: 0, after: 0 })
+    ];
+
+    // 2. BONAFIDE CERTIFICATE
+    const certChildren = [
+      p("BONAFIDE CERTIFICATE", true, false, AlignmentType.CENTER, 28, { before: 0, after: 240 }),
+      dividerLine(),
+      ...blankLine(1),
+      pWithRuns([
+        "This is to certify that ",
+        { text: `Mr./Ms. ${S.studentName}`, bold: true },
+        ", Reg. No. ",
+        { text: S.registerNumber, bold: true },
+        ", a student of ",
+        { text: `${S.semester || 'Fourth Semester'} ${S.course}`, bold: true },
+        " in the ",
+        { text: S.department, bold: true },
+        ", ",
+        { text: `${S.collegeName}, ${S.collegeLocation.split(',')[0]}`, bold: true },
+        ", has successfully completed the Internship titled ",
+        { text: `"${S.internshipDomain || S.internshipTopic || S.projectTitle}"`, bold: true },
+        " at ",
+        { text: S.companyName, bold: true },
+        " during the period from ",
+        { text: formatDateRange(S.startDate, S.endDate), bold: true },
+        "."
+      ]),
+      pWithRuns([
+        "The internship was carried out as a part of the curriculum requirements for the award of the Degree of ",
+        { text: S.course, bold: true },
+        " under ",
+        { text: S.universityName || "University of Kerala", bold: true },
+        "."
+      ]),
+      p("To the best of our knowledge, the work carried out by the student during the internship period is genuine and satisfactory."),
+      ...blankLine(3),
+      new Table({
+        width: { size: 9360, type: WidthType.DXA },
+        columnWidths: [4680, 4680],
+        rows: [
+          new TableRow({
+            cantSplit: true,
+            children: [
+              new TableCell({
+                width: { size: 4680, type: WidthType.DXA },
+                borders: noAllBorder,
+                children: [
+                  p("_________________________", false, false, AlignmentType.CENTER),
+                  p(S.hodName || "Mr. VINOD CHANDRAN", true, false, AlignmentType.CENTER),
+                  p("Head of the Department", false, false, AlignmentType.CENTER)
+                ]
+              }),
+              new TableCell({
+                width: { size: 4680, type: WidthType.DXA },
+                borders: noAllBorder,
+                children: [
+                  p("_________________________", false, false, AlignmentType.CENTER),
+                  p(S.principalName || "Rev. Fr. Dr. BENNY JOHN MARAMPARAMPIL", true, false, AlignmentType.CENTER),
+                  p("Principal", false, false, AlignmentType.CENTER)
+                ]
+              })
+            ]
+          })
+        ]
+      }),
+      ...blankLine(1),
+      p("Date: _________________", false, false, AlignmentType.LEFT),
+      p("Place: _________________", false, false, AlignmentType.LEFT)
+    ];
+
+    // 3. COMPANY CERTIFICATE
+    const companyCertChildren = [
+      p("CERTIFICATE FROM INTERNSHIP ORGANISATION", true, false, AlignmentType.CENTER, 28, { before: 0, after: 240 }),
+      dividerLine(),
+      ...blankLine(1),
+      p("TO WHOMSOEVER IT MAY CONCERN", true, false, AlignmentType.CENTER, 24, { before: 0, after: 120 }),
+      p(`This is to certify that ${S.studentName} (${S.course}), Department of ${cleanDepartmentName(S.department)}, ${S.collegeName}, has successfully completed a ${formatDuration(S.internshipDuration, true)} in ${S.internshipDomain} with our organisation, ${S.companyName}, during the academic year ${S.academicYear}.`),
+      p("During the internship period, the intern successfully completed tasks and gained exposure related to the following areas:"),
+      ...(data.certBullets.map(b => listNumberedItem(b, 10))),
+      p("We found the intern to be diligent, sincere, and committed to the responsibilities assigned. We wish the intern continued success in all future endeavors."),
+      ...blankLine(1),
+      p(`For ${S.companyName}`, true, false, AlignmentType.RIGHT),
+      ...blankLine(1),
+      p("_________________________", true, false, AlignmentType.RIGHT),
+      p("Authorized Signatory", true, false, AlignmentType.RIGHT)
+    ];
+
+    // 4. DECLARATION
+    const declChildren = [
+      p("DECLARATION", true, false, AlignmentType.CENTER, 28, { before: 0, after: 240 }),
+      dividerLine(),
+      ...blankLine(1),
+      p(`I, ${S.studentName}, hereby declare that the Summer Internship Report titled "${S.internshipDomain}" carried out at ${S.companyName} is a genuine record of the work done by me during the academic year ${S.academicYear} in partial fulfillment of the requirements for the ${S.semester || '4th Semester'} FYUGP ${S.course} programme under the Department of ${cleanDepartmentName(S.department)}, ${S.collegeName}. I further declare that this report has not been submitted previously, either fully or partially, for the award of any degree, diploma, or other similar title in any institution.`),
+      ...blankLine(1),
+      p(S.studentName, true, false, AlignmentType.RIGHT),
+      p(`${S.semester || 'S4'} ${S.course}`, false, false, AlignmentType.RIGHT),
+      p(S.collegeName, false, false, AlignmentType.RIGHT),
+      ...blankLine(1),
+      p("Forwarded to the University:", true, false, AlignmentType.LEFT),
+      ...blankLine(1),
+      new Table({
+        width: { size: 9360, type: WidthType.DXA },
+        columnWidths: [4680, 4680],
+        rows: [
+          new TableRow({
+            cantSplit: true,
+            children: [
+              new TableCell({ width: { size: 4680, type: WidthType.DXA }, borders: noAllBorder, children: [p("_________________________", false, false, AlignmentType.LEFT), p("Faculty Guide - Name & Signature", false, false, AlignmentType.LEFT)] }),
+              new TableCell({ width: { size: 4680, type: WidthType.DXA }, borders: noAllBorder, children: [p("_________________________", false, false, AlignmentType.LEFT), p("HOD - Name & Signature", false, false, AlignmentType.LEFT)] })
+            ]
+          }),
+          new TableRow({
+            cantSplit: true,
+            children: [
+              new TableCell({ width: { size: 4680, type: WidthType.DXA }, borders: noAllBorder, children: [...blankLine(1), p("_________________________", false, false, AlignmentType.LEFT), p("Principal - Name & Signature", false, false, AlignmentType.LEFT)] }),
+              new TableCell({ width: { size: 4680, type: WidthType.DXA }, borders: noAllBorder, children: [...blankLine(1), p("Place: " + (S.collegeLocation.split(',')[0] || "Cherthala"), false, false, AlignmentType.LEFT), p("Date: _________________", false, false, AlignmentType.LEFT)] })
+            ]
+          })
+        ]
+      })
+    ];
+
+    // 5. ACKNOWLEDGEMENT
+    const ackChildren = [
+      p("ACKNOWLEDGEMENT", true, false, AlignmentType.CENTER, 28, { before: 0, after: 240 }),
+      dividerLine(),
+      ...blankLine(2),
+      p(`I would like to express my sincere gratitude to all those who contributed to the successful completion of this internship and the preparation of this report.`),
+      p(`I am deeply grateful to the Management and Principal of ${S.collegeName} for providing the opportunity to undertake this summer internship as part of my ${S.course} curriculum, and for providing the academic support environment.`),
+      p(`I extend my heartfelt thanks to the Head of the Department of ${cleanDepartmentName(S.department)} for their constant administrative facilitation and academic encouragement throughout the internship.`),
+      p(`A special note of thanks is reserved for my Faculty Guide, ${S.facultyGuideName}, ${S.facultyGuideDesignation}, Department of ${cleanDepartmentName(S.department)}. ${getGuidePronoun(S.facultyGuideName)} technical insights, patient mentorship, and meticulous supervision at every stage of the report formulation were invaluable and deeply appreciated.`),
+      p(`I am immensely thankful to ${S.companyName} and my mentor ${S.mentorName} for providing a structured, comprehensive, and industry-oriented internship. The mentors demonstrated extraordinary expertise and patience in guiding me through modern technology configurations and datasets.`),
+      p(`Finally, I am deeply grateful to my family and friends for their unconditional support and motivation throughout all stages of my academic pursuits.`),
+      ...blankLine(3),
+      p(S.studentName, true, false, AlignmentType.RIGHT)
+    ];
+
+    // 6. TABLE OF CONTENTS
+    const tocRows = [
+      new TableRow({
+        cantSplit: true,
+        tblHeader: true,
+        children: [
+          makeCell("Sl. No.", true, 'FFFFFF', AlignmentType.LEFT, 1000),
+          makeCell("Content", true, 'FFFFFF', AlignmentType.LEFT, 7360),
+          makeCell("Page No.", true, 'FFFFFF', AlignmentType.CENTER, 1000)
+        ]
+      }),
+      new TableRow({ cantSplit: true, children: [makeCell("1", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Cover Page", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell("1", false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+      new TableRow({ cantSplit: true, children: [makeCell("2", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Bonafide Certificate", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.bonafide.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+      new TableRow({ cantSplit: true, children: [makeCell("3", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Certificate from Internship Organization", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.companyCert.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+      new TableRow({ cantSplit: true, children: [makeCell("4", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Declaration", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.declaration.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+      new TableRow({ cantSplit: true, children: [makeCell("5", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Acknowledgement", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.acknowledgement.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+      new TableRow({ cantSplit: true, children: [makeCell("6", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Table of Contents", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.toc.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+      new TableRow({ cantSplit: true, children: [makeCell("7", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Chapter 1 – Introduction", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.ch1.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+      new TableRow({ cantSplit: true, children: [makeCell("8", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Chapter 2 – Organization Profile", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.ch2.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+      new TableRow({ cantSplit: true, children: [makeCell("9", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Chapter 3 – Internship Activities", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.ch3.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+      new TableRow({ cantSplit: true, children: [makeCell("10", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell(S.noProject ? "Chapter 4 – Technical Learning & Skill Acquisition" : "Chapter 4 – Project Work / Technical Learning", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.ch4.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+      new TableRow({ cantSplit: true, children: [makeCell("11", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Chapter 5 – Findings & Learning Outcomes", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.ch5.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+      new TableRow({ cantSplit: true, children: [makeCell("12", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Chapter 6 – Conclusion", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.ch6.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+      new TableRow({ cantSplit: true, children: [makeCell("13", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("References", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.references.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] }),
+      new TableRow({ cantSplit: true, children: [makeCell("14", false, 'FFFFFF', AlignmentType.LEFT, 1000), makeCell("Appendices", false, 'FFFFFF', AlignmentType.LEFT, 7360), makeCell(B.startPages.appendices.toString(), false, 'FFFFFF', AlignmentType.CENTER, 1000)] })
+    ];
+
+    const tocChildren = [
+      p("TABLE OF CONTENTS", true, false, AlignmentType.CENTER, 28, { before: 0, after: 240 }),
+      dividerLine(),
+      ...blankLine(1),
+      new Table({
+        width: { size: 9360, type: WidthType.DXA },
+        columnWidths: [1000, 7360, 1000],
+        rows: tocRows
+      })
+    ];
+
+    // Build Daily Activity Table
+    const activityRows = [
+      new TableRow({
+        cantSplit: true,
+        tblHeader: true,
+        children: [
+          makeCell("Day", true, 'FFFFFF', AlignmentType.CENTER, 800),
+          makeCell("Task Title", true, 'FFFFFF', AlignmentType.LEFT, 2500),
+          makeCell("Key Activity & Analysis", true, 'FFFFFF', AlignmentType.JUSTIFIED, 4860),
+          makeCell("Hours Completed", true, 'FFFFFF', AlignmentType.CENTER, 1200)
+        ]
+      }),
+      ...(data.dailyActivities.map(act => new TableRow({
+        cantSplit: true,
+        children: [
+          makeCell(act.day.toString(), false, 'FFFFFF', AlignmentType.CENTER, 800),
+          makeCell(act.title, true, 'FFFFFF', AlignmentType.LEFT, 2500),
+          makeCell(act.activity, false, 'FFFFFF', AlignmentType.JUSTIFIED, 4860),
+          makeCell((act.hours || 4).toString(), false, 'FFFFFF', AlignmentType.CENTER, 1200)
+        ]
+      })))
+    ];
+
+    function formatChapter(sections, baseNum) {
+      const children = [];
+      const chapterNames = {
+        1: "CHAPTER 1 – INTRODUCTION",
+        2: "CHAPTER 2 – ORGANIZATION PROFILE",
+        3: "CHAPTER 3 – INTERNSHIP ACTIVITIES",
+        4: S.noProject ? "CHAPTER 4 – TECHNICAL LEARNING & SKILL ACQUISITION" : "CHAPTER 4 – PROJECT WORK / TECHNICAL LEARNING",
+        5: "CHAPTER 5 – FINDINGS AND LEARNING OUTCOMES",
+        6: "CHAPTER 6 – CONCLUSION"
+      };
+
+      sections.forEach((sec, sIdx) => {
+        if (sIdx === 0) {
+          children.push(H1(chapterNames[baseNum] || `CHAPTER ${baseNum}`));
+          children.push(blankLine(1)[0]);
+        }
+        
+        if (baseNum === 3 && (sec.heading.includes("3.5") || sec.heading.includes("3.6"))) {
+          children.push(new Paragraph({ pageBreakBefore: true, children: [] }));
+        }
+        
+        children.push(H2(sec.heading));
+        (sec.paragraphs || []).forEach(paraText => {
+          children.push(p(paraText));
+        });
+        
+        if (sec.bullets && sec.bullets.length) {
+          const instanceId = baseNum * 100 + sIdx;
+          sec.bullets.forEach(bul => {
+            children.push(listNumberedItem(bul, instanceId));
+          });
+        }
+        
+        // Custom addition for Section 1.4 table
+        if (baseNum === 1 && sec.heading.includes("1.4")) {
+          children.push(blankLine(1)[0]);
+          children.push(new Table({
+            width: { size: 9360, type: WidthType.DXA },
+            columnWidths: [3500, 5860],
+            rows: [
+              new TableRow({
+                cantSplit: true,
+                tblHeader: true,
+                children: [
+                  makeCell("Internship Parameter", true, 'F1F5F9', AlignmentType.LEFT, 3500),
+                  makeCell("Value / Details", true, 'F1F5F9', AlignmentType.LEFT, 5860)
+                ]
+              }),
+              new TableRow({ cantSplit: true, children: [makeCell("Organization", true, 'FFFFFF', AlignmentType.LEFT, 3500), makeCell(S.companyName, false, 'FFFFFF', AlignmentType.LEFT, 5860)] }),
+              new TableRow({ cantSplit: true, children: [makeCell("Duration", true, 'FFFFFF', AlignmentType.LEFT, 3500), makeCell(formatDuration(S.internshipDuration, true), false, 'FFFFFF', AlignmentType.LEFT, 5860)] }),
+              new TableRow({ cantSplit: true, children: [makeCell("Academic Year", true, 'FFFFFF', AlignmentType.LEFT, 3500), makeCell(S.academicYear, false, 'FFFFFF', AlignmentType.LEFT, 5860)] }),
+              new TableRow({ cantSplit: true, children: [makeCell("Student Name", true, 'FFFFFF', AlignmentType.LEFT, 3500), makeCell(S.studentName, false, 'FFFFFF', AlignmentType.LEFT, 5860)] }),
+              new TableRow({ cantSplit: true, children: [makeCell("Register Number", true, 'FFFFFF', AlignmentType.LEFT, 3500), makeCell(S.registerNumber, false, 'FFFFFF', AlignmentType.LEFT, 5860)] }),
+              new TableRow({ cantSplit: true, children: [makeCell("APAAR ID", true, 'FFFFFF', AlignmentType.LEFT, 3500), makeCell(S.apaarId, false, 'FFFFFF', AlignmentType.LEFT, 5860)] }),
+              new TableRow({ cantSplit: true, children: [makeCell("Course Code", true, 'FFFFFF', AlignmentType.LEFT, 3500), makeCell(S.courseCode || '', false, 'FFFFFF', AlignmentType.LEFT, 5860)] }),
+              new TableRow({ cantSplit: true, children: [makeCell("Programme", true, 'FFFFFF', AlignmentType.LEFT, 3500), makeCell(`${S.semester} FYUGP ${S.course}`, false, 'FFFFFF', AlignmentType.LEFT, 5860)] }),
+              new TableRow({ cantSplit: true, children: [makeCell("Faculty Guide", true, 'FFFFFF', AlignmentType.LEFT, 3500), makeCell(`${S.facultyGuideName}, ${S.facultyGuideDesignation}, Department of ${cleanDepartmentName(S.department)}`, false, 'FFFFFF', AlignmentType.LEFT, 5860)] })
+            ]
+          }));
+        }
+        
+        // Custom addition for Section 3.5 table
+        if (baseNum === 3 && sec.heading.includes("3.5")) {
+          children.push(blankLine(1)[0]);
+          children.push(new Table({
+            width: { size: 9360, type: WidthType.DXA },
+            columnWidths: [800, 2500, 4860, 1200],
+            rows: activityRows
+          }));
+        }
+      });
+      return children;
+    }
+
+    const ch1Children = formatChapter(data.ch1, 1);
+    const ch2Children = formatChapter(data.ch2, 2);
+    const ch3Narrative = formatChapter(data.ch3, 3);
+
+    const ch4Children = formatChapter(data.ch4, 4);
+    const ch5Children = formatChapter(data.ch5, 5);
+    const ch6Children = formatChapter(data.ch6, 6);
+
+    const refLines = data.references.map((ref, idx) => {
+      return p(`${idx + 1}.  ${ref}`, false, false, AlignmentType.JUSTIFIED, 24, { before: 60, after: 60, line: 360 });
+    });
+
+    const referencesChildren = [
+      H1("REFERENCES"),
+      dividerLine(),
+      ...blankLine(1),
+      ...refLines
+    ];
+
+    const appendicesChildren = [
+      H1("APPENDICES"),
+      dividerLine(),
+      ...blankLine(1),
+      p("Appendix A: Internship Completion Certificate from " + S.companyName, true, false, AlignmentType.LEFT, 24, { before: 120, after: 60 }),
+      p("A copy of the official completion certificate issued by the host organization confirming completion of the duration hours and tasks.", false, true),
+      ...blankLine(1),
+      p("Appendix B: Daily Attendance Sheet and Log Verification", true, false, AlignmentType.LEFT, 24, { before: 120, after: 60 }),
+      p("Standard academic logs verifying presence and supervisor evaluation scores.", false, true),
+      ...blankLine(1),
+      p("Appendix C: Technical Scripting Modules & Code Samples", true, false, AlignmentType.LEFT, 24, { before: 120, after: 60 }),
+      p("Academic screenshots and core python script listings built during environment setup, Wireshark traffic scanning, and SQLite databases.", false, true)
+    ];
+
+    const allChildren = [
+      ...coverChildren,
+      new Paragraph({ pageBreakBefore: true, children: [] }),
+      ...certChildren,
+      new Paragraph({ pageBreakBefore: true, children: [] }),
+      ...companyCertChildren,
+      new Paragraph({ pageBreakBefore: true, children: [] }),
+      ...declChildren,
+      new Paragraph({ pageBreakBefore: true, children: [] }),
+      ...ackChildren,
+      new Paragraph({ pageBreakBefore: true, children: [] }),
+      ...tocChildren,
+      ...ch1Children,
+      ...ch2Children,
+      ...ch3Narrative,
+      ...ch4Children,
+      ...ch5Children,
+      ...ch6Children,
+      ...referencesChildren,
+      ...appendicesChildren
+    ];
+
+    const header = new Header({
+      children: [
+        new Table({
+          width: { size: 9360, type: WidthType.DXA },
+          columnWidths: [6240, 3120],
+          rows: [
+            new TableRow({
+              children: [
+                new TableCell({
+                  width: { size: 6240, type: WidthType.DXA },
+                  borders: noAllBorder,
+                  children: [p(`Summer Internship Report – ${S.internshipDomain}`, true, false, AlignmentType.LEFT, 18, { before: 0, after: 0 })]
+                }),
+                new TableCell({
+                  width: { size: 3120, type: WidthType.DXA },
+                  borders: noAllBorder,
+                  children: [p(`${S.studentName} | Reg: ${S.registerNumber}`, false, false, AlignmentType.RIGHT, 18, { before: 0, after: 0 })]
+                })
+              ]
+            })
+          ]
+        }),
+        new Paragraph({
+          border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: C.border, space: 4 } },
+          spacing: { before: 40, after: 100 },
+          children: []
+        })
+      ]
+    });
+
+    const footer = new Footer({
+      children: [
+        new Paragraph({
+          border: { top: { style: BorderStyle.SINGLE, size: 6, color: C.border, space: 4 } },
+          spacing: { before: 100, after: 40 },
+          children: []
+        }),
+        new Table({
+          width: { size: 9360, type: WidthType.DXA },
+          columnWidths: [6000, 3360],
+          rows: [
+            new TableRow({
+              children: [
+                new TableCell({
+                  width: { size: 6000, type: WidthType.DXA },
+                  borders: noAllBorder,
+                  children: [p(`${S.collegeName}, ${S.collegeLocation.split(',')[0]}`, false, false, AlignmentType.LEFT, 16, { before: 0, after: 0 })]
+                }),
+                new TableCell({
+                  width: { size: 3360, type: WidthType.DXA },
+                  borders: noAllBorder,
+                  children: [
+                    new Paragraph({
+                      alignment: AlignmentType.RIGHT,
+                      children: [
+                        new TextRun({ text: "Page ", size: 16, font: 'Times New Roman', color: C.grey }),
+                        new TextRun({ children: [PageNumber.CURRENT], size: 16, font: 'Times New Roman', color: C.grey }),
+                        new TextRun({ text: " of ", size: 16, font: 'Times New Roman', color: C.grey }),
+                        new TextRun({ children: [PageNumber.TOTAL_PAGES], size: 16, font: 'Times New Roman', color: C.grey })
+                      ]
+                    })
+                  ]
+                })
+              ]
+            })
+          ]
+        })
+      ]
+    });
+
+    const doc = new Document({
+      numbering: {
+        config: [
+          {
+            reference: 'bullets',
+            levels: [{
+              level: 0,
+              format: LevelFormat.BULLET,
+              text: '•',
+              alignment: AlignmentType.LEFT,
+              style: {
+                paragraph: {
+                  indent: { left: 720, hanging: 360 },
+                  spacing: { before: 60, after: 60, line: 360 }
+                }
+              }
+            }]
+          },
+          {
+            reference: 'numbered-list',
+            levels: [{
+              level: 0,
+              format: LevelFormat.DECIMAL,
+              text: '%1.',
+              alignment: AlignmentType.LEFT,
+              style: {
+                paragraph: {
+                  indent: { left: 720, hanging: 360 },
+                  spacing: { before: 60, after: 60, line: 360 }
+                }
+              }
+            }]
+          }
+        ]
+      },
+      styles: {
+        default: {
+          document: {
+            run: {
+              font: 'Times New Roman',
+              size: 24,
+              color: C.text
+            }
+          }
+        },
+        paragraphStyles: [
+          {
+            id: 'Heading1',
+            name: 'Heading 1',
+            basedOn: 'Normal',
+            next: 'Normal',
+            quickFormat: true,
+            run: {
+              font: 'Times New Roman',
+              size: 32,
+              bold: true,
+              color: C.navy
+            },
+            paragraph: {
+              spacing: { before: 240, after: 120, line: 360 },
+              outlineLevel: 0
+            }
+          },
+          {
+            id: 'Heading2',
+            name: 'Heading 2',
+            basedOn: 'Normal',
+            next: 'Normal',
+            quickFormat: true,
+            run: {
+              font: 'Times New Roman',
+              size: 28,
+              bold: true,
+              color: C.blue
+            },
+            paragraph: {
+              spacing: { before: 180, after: 90, line: 360 },
+              outlineLevel: 1
+            }
+          }
+        ]
+      },
+      sections: [{
+        properties: {
+          page: {
+            size: { width: 11906, height: 16838 },
+            margin: { top: 1440, right: 1440, bottom: 1440, left: 1800 }
+          }
+        },
+        headers: { default: header },
+        footers: { default: footer },
+        children: allChildren
+      }]
+    });
+
+    Packer.toBase64String(doc).then(base64 => {
+      const a = document.createElement('a');
+      a.href = 'data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,' + base64;
+      const safeName = S.studentName.replace(/\s+/g, '_');
+      a.download = `${safeName}_Internship_Report.docx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+  }
+
+  // Toast UI trigger
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    const txt = document.getElementById('toastText');
+    if (toast && txt) {
+      txt.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+  }
+
+  // Console Logging helper
+  function addLog(msg, type = "info") {
+    const card = document.getElementById('logCard');
+    if (!card) return;
+    
+    const time = new Date().toTimeString().split(' ')[0];
+    const div = document.createElement('div');
+    div.className = 'log-line';
+    
+    let spanClass = "log-info";
+    if (type === "success") spanClass = "log-success";
+    if (type === "warning") spanClass = "log-warning";
+    if (type === "error") spanClass = "log-error";
+    
+    div.innerHTML = `
+      <span class="log-time">[${time}]</span>
+      <span class="${spanClass}">${msg}</span>
+    `;
+    
+    card.appendChild(div);
+    card.scrollTop = card.scrollHeight;
+  }
+</script>
+</body>
+</html>
